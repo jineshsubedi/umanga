@@ -29,7 +29,7 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company->load(['users' => fn($q) => $q->where('role', '!=', 'super_admin')]);
+        $company->load(['users' => fn($q) => $q->where('role', '!=', 'super_admin')->withCount('meetingMinutes')]);
 
         $stats = [
             'total_users'           => $company->users->count(),

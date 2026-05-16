@@ -16,8 +16,9 @@ class UserController extends Controller
     {
         $users = User::where('company_id', auth()->user()->company_id)
             ->where('role', '!=', 'super_admin')
+            ->withCount('meetingMinutes')
             ->latest()
-            ->get(['id', 'name', 'email', 'role', 'status', 'created_at']);
+            ->get();
 
         return Inertia::render('Admin/Users/Index', compact('users'));
     }

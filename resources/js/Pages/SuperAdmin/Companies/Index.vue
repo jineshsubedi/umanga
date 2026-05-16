@@ -15,7 +15,7 @@ const toggle = (company) => {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-gray-900">All Companies</h2>
-                <span class="text-sm text-gray-500">{{ companies.length }} companies registered</span>
+                <!-- <span class="text-sm text-gray-500">{{ companies.length }} companies registered</span> -->
             </div>
         </template>
 
@@ -38,6 +38,7 @@ const toggle = (company) => {
                 </div>
 
                 <!-- Table -->
+                 <span class="text-sm text-gray-500">{{ companies.length }} companies registered</span>
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50">

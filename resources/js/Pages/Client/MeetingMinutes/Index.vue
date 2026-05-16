@@ -20,6 +20,12 @@ const del = (minute) => {
         router.delete(route('client.meeting-minutes.destroy', minute.id));
     }
 };
+
+const duplicate = (minute) => {
+    if (confirm('Create a new draft based on this rejected minute?')) {
+        router.post(route('client.meeting-minutes.duplicate', minute.id));
+    }
+};
 </script>
 
 <template>
@@ -28,17 +34,22 @@ const del = (minute) => {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-gray-900">My Meeting Minutes</h2>
-                <Link :href="route('client.meeting-minutes.create')"
+                <!-- <Link :href="route('client.meeting-minutes.create')"
                     class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     New Minute
-                </Link>
+                </Link> -->
             </div>
         </template>
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="space-y-4">
+                    <Link :href="route('client.meeting-minutes.create')"
+                    class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    New Minute
+                </Link>
                     <div v-for="minute in minutes" :key="minute.id"
                         class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between gap-4">
@@ -47,7 +58,7 @@ const del = (minute) => {
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(minute.status)">
                                         {{ minute.status }}
                                     </span>
-                                    <span class="text-xs text-gray-400">{{ minute.meeting_date }}</span>
+                                    <span class="text-xs text-gray-400">{{ minute.formatted_meeting_date }}</span>
                                 </div>
                                 <h3 class="text-base font-semibold text-gray-900 truncate">{{ minute.title }}</h3>
 
@@ -63,14 +74,20 @@ const del = (minute) => {
                                 <Link :href="route('client.meeting-minutes.show', minute.id)"
                                     class="text-sm text-indigo-600 hover:text-indigo-900 font-medium">View</Link>
 
-                                <Link v-if="['draft','rejected'].includes(minute.status)"
+                                <Link v-if="minute.status === 'draft'"
                                     :href="route('client.meeting-minutes.edit', minute.id)"
                                     class="text-sm text-gray-600 hover:text-gray-900 font-medium">Edit</Link>
 
-                                <button v-if="['draft','rejected'].includes(minute.status)"
+                                <button v-if="minute.status === 'draft'"
                                     @click="submit(minute)"
                                     class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md font-medium transition-colors">
                                     Submit
+                                </button>
+
+                                <button v-if="minute.status === 'rejected'"
+                                    @click="duplicate(minute)"
+                                    class="text-sm bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-md font-medium transition-colors">
+                                    Revise (New)
                                 </button>
 
                                 <button v-if="minute.status !== 'approved'"

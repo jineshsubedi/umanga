@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Attendance;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,6 +31,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $todayAttendance = null;
+        if ($request->user() && $request->user()->role !== 'super_admin') {
+            $todayAttendance = Attendance::where('user_id', $request->user()->id)
+                ->whereDate('date', Carbon::today())
+                ->first();
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -45,6 +54,13 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'today_attendance' => $todayAttendance ? [
+                'id'        => $todayAttendance->id,
+                'clock_in'  => $todayAttendance->clock_in,
+                'clock_out' => $todayAttendance->clock_out,
+                'formatted_clock_in'  => $todayAttendance->formatted_clock_in,
+                'formatted_clock_out' => $todayAttendance->formatted_clock_out,
+            ] : null,
         ];
     }
 }

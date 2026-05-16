@@ -40,6 +40,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(MeetingMinuteReview::class, 'reviewed_by');
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
     public function isAdmin(): bool      { return $this->role === 'admin'; }
     public function isManager(): bool    { return $this->role === 'manager'; }

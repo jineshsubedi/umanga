@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Manager\MeetingMinuteController as ManagerMeetingMinuteController;
@@ -44,14 +45,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
 });
 
+// ─── Attendance (all authenticated non-superadmin users) ────────────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/attendance/clock-in',  [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
+    Route::post('/attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
+});
+
 // ─── Super Admin ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:super_admin'])
     ->prefix('super-admin')
     ->name('super-admin.')
     ->group(function () {
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
         Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
         Route::patch('/companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus'])->name('companies.toggle-status');
+        Route::get('/attendance', [\App\Http\Controllers\SuperAdmin\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
@@ -61,6 +70,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
+        Route::get('/meeting-minutes', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
+        Route::get('/meeting-minutes/{meetingMinute}', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
+        Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 // ─── Manager ─────────────────────────────────────────────────────────────────
@@ -86,6 +98,7 @@ Route::middleware(['auth', 'verified', 'role:client'])
         Route::put('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'update'])->name('meeting-minutes.update');
         Route::delete('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'destroy'])->name('meeting-minutes.destroy');
         Route::post('/meeting-minutes/{meetingMinute}/submit', [ClientMeetingMinuteController::class, 'submit'])->name('meeting-minutes.submit');
+        Route::post('/meeting-minutes/{meetingMinute}/duplicate', [ClientMeetingMinuteController::class, 'duplicate'])->name('meeting-minutes.duplicate');
     });
 
 require __DIR__.'/auth.php';

@@ -12,7 +12,7 @@ const props = defineProps({ minute: Object });
 const form = useForm({
     title: props.minute.title,
     content: props.minute.content,
-    meeting_date: props.minute.meeting_date,
+    meeting_date: props.minute.meeting_date ? new Date(props.minute.meeting_date).toISOString().slice(0, 16) : '',
 });
 
 const submit = () => form.put(route('client.meeting-minutes.update', props.minute.id));
@@ -48,7 +48,7 @@ const submit = () => form.put(route('client.meeting-minutes.update', props.minut
                         </div>
                         <div>
                             <InputLabel for="meeting_date" value="Meeting Date" />
-                            <TextInput id="meeting_date" type="date" class="mt-1 block w-full" v-model="form.meeting_date" required />
+                            <TextInput id="meeting_date" type="datetime-local" class="mt-1 block w-full" v-model="form.meeting_date" required />
                             <InputError class="mt-2" :message="form.errors.meeting_date" />
                         </div>
                         <div>

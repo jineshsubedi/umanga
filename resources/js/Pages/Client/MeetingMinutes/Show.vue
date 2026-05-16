@@ -5,6 +5,11 @@ import { Head, Link, router } from '@inertiajs/vue3';
 const props = defineProps({ minute: Object });
 
 const submit = () => router.post(route('client.meeting-minutes.submit', props.minute.id));
+const duplicate = () => {
+    if (confirm('Create a new draft based on this rejected minute?')) {
+        router.post(route('client.meeting-minutes.duplicate', props.minute.id));
+    }
+};
 </script>
 
 <template>
@@ -31,7 +36,8 @@ const submit = () => router.post(route('client.meeting-minutes.submit', props.mi
         <div class="py-8">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Actions -->
-                <div v-if="['draft','rejected'].includes(minute.status)" class="flex gap-3">
+                <!-- Actions -->
+                <div v-if="minute.status === 'draft'" class="flex gap-3">
                     <Link :href="route('client.meeting-minutes.edit', minute.id)"
                         class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                         Edit
@@ -41,13 +47,20 @@ const submit = () => router.post(route('client.meeting-minutes.submit', props.mi
                         Submit for Approval
                     </button>
                 </div>
+                
+                <div v-if="minute.status === 'rejected'" class="flex gap-3">
+                    <button @click="duplicate"
+                        class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        Revise (Create New Draft)
+                    </button>
+                </div>
 
                 <!-- Minute Content -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
                         <div>
                             <p class="text-sm text-gray-500">Meeting Date</p>
-                            <p class="font-medium text-gray-800">{{ minute.meeting_date }}</p>
+                            <p class="font-medium text-gray-800">{{ minute.formatted_meeting_date }}</p>
                         </div>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 prose max-w-none" v-html="minute.content"></div>

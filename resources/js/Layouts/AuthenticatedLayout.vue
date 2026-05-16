@@ -4,7 +4,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { useTheme } from '@/Composables/useTheme';
 
 const { isDark, toggleTheme } = useTheme();
@@ -15,6 +15,43 @@ const user = computed(() => page.props.auth.user);
 const role = computed(() => user.value?.role);
 const flash = computed(() => page.props.flash);
 const notifications = computed(() => page.props.auth?.notifications || []);
+const todayAttendance = computed(() => page.props.today_attendance);
+
+// Geolocation helpers
+const geoStatus = ref('idle'); // idle | fetching | done | denied
+const geoData   = ref({ lat: null, lng: null, address: '' });
+
+const fetchGeo = () => new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve({});
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const base = { lat, lng, address: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+            // Reverse geocode via Nominatim (no API key needed)
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                .then(r => r.json())
+                .then(d => resolve({ ...base, address: d.display_name || base.address }))
+                .catch(() => resolve(base));
+        },
+        () => resolve({}),
+        { timeout: 5000 }
+    );
+});
+
+const handleClockIn = async () => {
+    geoStatus.value = 'fetching';
+    const geo = await fetchGeo();
+    geoStatus.value = 'done';
+    router.post(route('attendance.clock-in'), geo, { preserveScroll: true });
+};
+
+const handleClockOut = async () => {
+    geoStatus.value = 'fetching';
+    const geo = await fetchGeo();
+    geoStatus.value = 'done';
+    router.post(route('attendance.clock-out'), geo, { preserveScroll: true });
+};
 
 // Auto-dismiss alerts
 const showSuccess = ref(false);
@@ -45,10 +82,14 @@ const navigation = computed(() => {
     let nav = [];
     if (role.value === 'admin') {
         nav.push({ name: 'Dashboard', href: route('admin.dashboard'), current: route().current('admin.dashboard'), icon: 'dashboard' });
-        nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.*'), icon: 'users' });
+        nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
+        nav.push({ name: 'Meeting Minutes', href: route('admin.meeting-minutes.index'), current: route().current('admin.meeting-minutes.*'), icon: 'document' });
+        nav.push({ name: 'Attendance', href: route('admin.attendance.index'), current: route().current('admin.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'super_admin') {
-        nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.*'), icon: 'office' });
+        nav.push({ name: 'Dashboard', href: route('super-admin.dashboard'), current: route().current('super-admin.dashboard'), icon: 'dashboard' });
+        nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.companies.*'), icon: 'office' });
+        nav.push({ name: 'Attendance', href: route('super-admin.attendance.index'), current: route().current('super-admin.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'manager') {
         nav.push({ name: 'Meeting Minutes', href: route('manager.meeting-minutes.index'), current: route().current('manager.*'), icon: 'document' });
@@ -104,6 +145,7 @@ const navigation = computed(() => {
                     <svg v-if="item.icon === 'users'" class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                     <svg v-if="item.icon === 'office'" class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     <svg v-if="item.icon === 'document'" class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <svg v-if="item.icon === 'clock'" class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     
                     {{ item.name }}
                 </Link>
@@ -165,7 +207,42 @@ const navigation = computed(() => {
                     <div class="flex flex-1 items-center">
                         <slot name="header" />
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <!-- Clock In / Clock Out Widget (hidden for super_admin) -->
+                        <div v-if="role !== 'super_admin'" class="hidden sm:flex items-center gap-2">
+
+                            <!-- Not clocked in yet -->
+                            <button v-if="!todayAttendance"
+                                @click="handleClockIn"
+                                :disabled="geoStatus === 'fetching'"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                                <svg v-if="geoStatus !== 'fetching'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <svg v-else class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                {{ geoStatus === 'fetching' ? 'Locating...' : 'Clock In' }}
+                            </button>
+
+                            <!-- Clocked in, not out yet -->
+                            <div v-else-if="todayAttendance && !todayAttendance.clock_out" class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500 dark:text-gray-400 hidden md:inline">
+                                    In: <strong class="text-gray-700 dark:text-gray-300">{{ todayAttendance.formatted_clock_in }}</strong>
+                                </span>
+                                <button
+                                    @click="handleClockOut"
+                                    :disabled="geoStatus === 'fetching'"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
+                                    <svg v-if="geoStatus !== 'fetching'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M12 8v4l3 3"/></svg>
+                                    <svg v-else class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                    {{ geoStatus === 'fetching' ? 'Locating...' : 'Clock Out' }}
+                                </button>
+                            </div>
+
+                            <!-- Fully clocked out -->
+                            <div v-else class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-xs font-medium rounded-lg">
+                                <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                Done {{ todayAttendance.formatted_clock_out }}
+                            </div>
+                        </div>
+
                         <!-- Role Badge -->
                         <span class="hidden sm:inline-flex text-xs font-medium px-2.5 py-1 rounded-full" :class="roleBadge.cls">
                             {{ roleBadge.label }}

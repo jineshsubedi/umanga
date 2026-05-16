@@ -1,16 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({ minute: Object });
-
-const form = useForm({ status: '', comment: '' });
-
-const submit = () => {
-    form.post(route('manager.meeting-minutes.review', props.minute.id), {
-        onSuccess: () => form.reset(),
-    });
-};
 </script>
 
 <template>
@@ -18,7 +10,7 @@ const submit = () => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
-                <Link :href="route('manager.meeting-minutes.index')" class="text-gray-400 hover:text-gray-600">
+                <Link :href="route('admin.meeting-minutes.index')" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </Link>
                 <h2 class="text-xl font-semibold text-gray-900">{{ minute.title }}</h2>
@@ -36,6 +28,7 @@ const submit = () => {
                         </div>
                         <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
                             :class="{
+                                'bg-gray-100 text-gray-600': minute.status === 'draft',
                                 'bg-yellow-100 text-yellow-700': minute.status === 'pending',
                                 'bg-green-100 text-green-700': minute.status === 'approved',
                                 'bg-red-100 text-red-700': minute.status === 'rejected',
@@ -67,42 +60,6 @@ const submit = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Review Form (only if pending) -->
-                <div v-if="minute.status === 'pending'" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Submit Your Review</h3>
-                    <form @submit.prevent="submit" class="space-y-4">
-                        <div class="flex gap-3">
-                            <button type="button" @click="form.status = 'approved'"
-                                class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'approved' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600 hover:border-green-300'">
-                                ✓ Approve
-                            </button>
-                            <button type="button" @click="form.status = 'rejected'"
-                                class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'rejected' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-red-300'">
-                                ✗ Reject
-                            </button>
-                        </div>
-                        <p v-if="form.errors.status" class="text-sm text-red-600">{{ form.errors.status }}</p>
-
-                        <div v-if="form.status === 'rejected'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rejection Reason <span class="text-red-500">*</span></label>
-                            <textarea v-model="form.comment" rows="4"
-                                class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
-                                placeholder="Explain what needs to be corrected..."></textarea>
-                            <p v-if="form.errors.comment" class="text-sm text-red-600 mt-1">{{ form.errors.comment }}</p>
-                        </div>
-
-                        <div v-if="form.status" class="flex justify-end">
-                            <button type="submit" :disabled="form.processing"
-                                class="px-6 py-2 rounded-lg text-white font-medium text-sm transition-colors"
-                                :class="form.status === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'">
-                                Submit Review
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

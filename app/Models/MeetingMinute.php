@@ -13,8 +13,10 @@ class MeetingMinute extends Model
         'company_id', 'created_by', 'title', 'content', 'meeting_date', 'status',
     ];
 
+    protected $appends = ['formatted_meeting_date'];
+
     protected $casts = [
-        'meeting_date' => 'date',
+        'meeting_date' => 'datetime',
     ];
 
     public function company()
@@ -35,5 +37,10 @@ class MeetingMinute extends Model
     public function latestReview()
     {
         return $this->hasOne(MeetingMinuteReview::class)->latestOfMany();
+    }
+
+    public function getFormattedMeetingDateAttribute()
+    {
+        return $this->meeting_date ? $this->meeting_date->format('jS M, Y g A') : null;
     }
 }

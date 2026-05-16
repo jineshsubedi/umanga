@@ -1,7 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({ minutes: Array, counts: Object, status: String });
 
@@ -12,22 +11,22 @@ const statusBadge = (s) => ({
     rejected: 'bg-red-100 text-red-700',
 }[s] ?? 'bg-gray-100 text-gray-600');
 
-const tabs = ['pending', 'approved', 'rejected'];
+const tabs = ['all', 'draft', 'pending', 'approved', 'rejected'];
 </script>
 
 <template>
-    <Head title="Meeting Minutes" />
+    <Head title="Company Meeting Minutes" />
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold text-gray-900">Meeting Minutes Review</h2>
+            <h2 class="text-xl font-semibold text-gray-900">Company Meeting Minutes</h2>
         </template>
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Tabs -->
-                <div class="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+                <div class="flex flex-wrap gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
                     <Link v-for="tab in tabs" :key="tab"
-                        :href="route('manager.meeting-minutes.index', { status: tab })"
+                        :href="route('admin.meeting-minutes.index', { status: tab })"
                         class="px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize flex items-center gap-2"
                         :class="status === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'">
                         {{ tab }}
@@ -63,13 +62,13 @@ const tabs = ['pending', 'approved', 'rejected'];
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <Link :href="route('manager.meeting-minutes.show', minute.id)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                                        {{ minute.status === 'pending' ? 'Review' : 'View' }}
+                                    <Link :href="route('admin.meeting-minutes.show', minute.id)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                        View
                                     </Link>
                                 </td>
                             </tr>
                             <tr v-if="minutes.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">No {{ status }} meeting minutes.</td>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">No {{ status === 'all' ? '' : status }} meeting minutes found.</td>
                             </tr>
                         </tbody>
                     </table>

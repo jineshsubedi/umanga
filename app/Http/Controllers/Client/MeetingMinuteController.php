@@ -59,7 +59,7 @@ class MeetingMinuteController extends Controller
     public function edit(MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->created_by !== auth()->id(), 403);
-        abort_if(!in_array($meetingMinute->status, ['draft', 'rejected']), 422, 'Cannot edit this minute.');
+        abort_if($meetingMinute->status !== 'draft', 422, 'Cannot edit this minute.');
         $meetingMinute->load('latestReview');
 
         return Inertia::render('Client/MeetingMinutes/Edit', ['minute' => $meetingMinute]);
@@ -68,7 +68,7 @@ class MeetingMinuteController extends Controller
     public function update(Request $request, MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->created_by !== auth()->id(), 403);
-        abort_if(!in_array($meetingMinute->status, ['draft', 'rejected']), 422);
+        abort_if($meetingMinute->status !== 'draft', 422, 'Cannot edit this minute.');
 
         $request->validate([
             'title'        => 'required|string|max:255',
@@ -85,7 +85,7 @@ class MeetingMinuteController extends Controller
     public function submit(MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->created_by !== auth()->id(), 403);
-        abort_if(!in_array($meetingMinute->status, ['draft', 'rejected']), 422);
+        abort_if($meetingMinute->status !== 'draft', 422, 'Only draft minutes can be submitted.');
 
         $meetingMinute->update(['status' => 'pending']);
 
@@ -108,5 +108,19 @@ class MeetingMinuteController extends Controller
         $meetingMinute->delete();
 
         return back()->with('success', 'Meeting minute deleted.');
+    }
+
+    public function duplicate(MeetingMinute $meetingMinute)
+    {
+        abort_if($meetingMinute->created_by !== auth()->id(), 403);
+        abort_if($meetingMinute->status !== 'rejected', 422, 'Only rejected minutes can be duplicated.');
+
+        $newMinute = $meetingMinute->replicate();
+        $newMinute->status = 'draft';
+        $newMinute->title = $newMinute->title . ' (Revision)';
+        $newMinute->save();
+
+        return redirect()->route('client.meeting-minutes.edit', $newMinute->id)
+            ->with('success', 'Meeting minute duplicated as a new draft. You can now revise it.');
     }
 }

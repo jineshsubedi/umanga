@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\CompanyController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Manager\MeetingMinuteController as ManagerMeetingMinuteController;
 use App\Http\Controllers\Client\MeetingMinuteController as ClientMeetingMinuteController;
@@ -27,7 +28,7 @@ Route::get('/', function () {
 
 // Dashboard — redirects based on role
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 // Profile
@@ -54,15 +55,16 @@ Route::middleware(['auth', 'role:super_admin'])
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
     });
 
 // ─── Manager ─────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:manager'])
+Route::middleware(['auth', 'verified', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
@@ -72,7 +74,7 @@ Route::middleware(['auth', 'role:manager'])
     });
 
 // ─── Client ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:client'])
+Route::middleware(['auth', 'verified', 'role:client'])
     ->prefix('client')
     ->name('client.')
     ->group(function () {

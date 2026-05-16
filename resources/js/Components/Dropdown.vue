@@ -12,7 +12,7 @@ const props = defineProps({
     },
     contentClasses: {
         type: String,
-        default: 'py-1 bg-white',
+        default: 'py-1 bg-white dark:bg-gray-800',
     },
 });
 
@@ -28,7 +28,8 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 const widthClass = computed(() => {
     return {
         48: 'w-48',
-    }[props.width.toString()];
+        80: 'w-80',
+    }[props.width.toString()] || 'w-' + props.width;
 });
 
 const alignmentClasses = computed(() => {

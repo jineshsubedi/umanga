@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -35,7 +36,7 @@ class UserController extends Controller
             'password' => ['required', Rules\Password::defaults()],
         ]);
 
-        User::create([
+        $user = User::create([
             'company_id' => auth()->user()->company_id,
             'name'       => $request->name,
             'email'      => $request->email,
@@ -44,7 +45,9 @@ class UserController extends Controller
             'status'     => 'active',
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        event(new Registered($user));
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully. Verification email sent.');
     }
 
     public function edit(User $user)

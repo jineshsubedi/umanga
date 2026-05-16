@@ -14,7 +14,7 @@ const editor = useEditor({
     extensions: [StarterKit],
     editorProps: {
         attributes: {
-            class: 'prose max-w-none min-h-[200px] px-4 py-3 focus:outline-none text-sm text-gray-800',
+            class: 'prose dark:prose-invert max-w-none min-h-[200px] px-4 py-3 focus:outline-none text-sm text-gray-800 dark:text-gray-200',
         },
     },
     onUpdate: ({ editor }) => {
@@ -44,25 +44,25 @@ const run = (cmd) => editor.value?.chain().focus()[cmd]().run();
 </script>
 
 <template>
-    <div class="border border-gray-300 rounded-md overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+    <div class="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 dark:focus-within:border-indigo-600 dark:focus-within:ring-indigo-600">
         <!-- Toolbar -->
-        <div class="flex flex-wrap gap-1 px-3 py-2 bg-gray-50 border-b border-gray-200">
+        <div class="flex flex-wrap gap-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <button v-for="action in toolbarActions" :key="action.cmd"
                 type="button"
                 @click="run(action.cmd)"
                 :title="action.title"
-                class="px-2 py-1 text-xs rounded hover:bg-gray-200 transition-colors text-gray-700 font-medium"
+                class="px-2 py-1 text-xs rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 font-medium"
                 v-html="action.icon">
             </button>
-            <div class="w-px bg-gray-200 mx-1"></div>
+            <div class="w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
             <button type="button" @click="editor?.chain().focus().undo().run()" title="Undo"
-                class="px-2 py-1 text-xs rounded hover:bg-gray-200 transition-colors text-gray-600">↩ Undo</button>
+                class="px-2 py-1 text-xs rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400">↩ Undo</button>
             <button type="button" @click="editor?.chain().focus().redo().run()" title="Redo"
-                class="px-2 py-1 text-xs rounded hover:bg-gray-200 transition-colors text-gray-600">↪ Redo</button>
+                class="px-2 py-1 text-xs rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-400">↪ Redo</button>
         </div>
         <!-- Editor -->
         <EditorContent :editor="editor" />
-        <div v-if="!editor?.getText()" class="px-4 py-3 text-sm text-gray-400 absolute pointer-events-none -mt-9">
+        <div v-if="!editor?.getText()" class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 absolute pointer-events-none -mt-9">
         </div>
     </div>
 </template>

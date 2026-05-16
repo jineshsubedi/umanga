@@ -14,10 +14,11 @@ class SuperAdminSeeder extends Seeder
             ['email' => 'superadmin@umng.com'],
             [
                 'name'       => 'Super Admin',
-                'password'   => Hash::make('password'),
-                'role'       => 'super_admin',
-                'status'     => 'active',
-                'company_id' => null,
+                'password'          => Hash::make('password'),
+                'role'              => 'super_admin',
+                'status'            => 'active',
+                'company_id'        => null,
+                'email_verified_at' => now(),
             ]
         );
 

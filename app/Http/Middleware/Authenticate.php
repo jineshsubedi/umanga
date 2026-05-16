@@ -15,17 +15,17 @@ class Authenticate extends Middleware
     {
         $this->authenticate($request, $guards);
 
-        if (auth()->check() && auth()->user()->status === 'inactive') {
+        if (auth()->check() && (auth()->user()->status === 'inactive' || (auth()->user()->company && auth()->user()->company->status === 'inactive'))) {
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             if ($request->expectsJson() || $request->header('X-Inertia')) {
-                abort(403, 'Your account has been deactivated. Please contact the administrator.');
+                abort(403, 'Your account or company has been deactivated. Please contact the administrator.');
             }
 
             return redirect()->route('login')->withErrors([
-                'email' => 'Your account has been deactivated. Please contact the administrator.',
+                'email' => 'Your account or company has been deactivated. Please contact the administrator.',
             ]);
         }
 

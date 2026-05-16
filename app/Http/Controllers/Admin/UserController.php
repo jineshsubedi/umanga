@@ -78,4 +78,15 @@ class UserController extends Controller
         $user->update(['status' => 'inactive']);
         return back()->with('success', 'User deactivated successfully.');
     }
+
+    public function toggleStatus(User $user)
+    {
+        abort_if($user->company_id !== auth()->user()->company_id, 403);
+        abort_if($user->role === 'super_admin' || $user->id === auth()->id(), 403, 'Cannot toggle status of this user.');
+
+        $newStatus = $user->status === 'active' ? 'inactive' : 'active';
+        $user->update(['status' => $newStatus]);
+
+        return back()->with('success', "User has been " . ($newStatus === 'active' ? 'activated' : 'deactivated') . " successfully.");
+    }
 }

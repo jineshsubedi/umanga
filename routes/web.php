@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
+        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::get('/meeting-minutes', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
         Route::get('/meeting-minutes/{meetingMinute}', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
         Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');

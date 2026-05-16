@@ -49,11 +49,11 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (Auth::user()->status === 'inactive') {
+        if (Auth::user()->status === 'inactive' || (Auth::user()->company && Auth::user()->company->status === 'inactive')) {
             Auth::logout();
 
             throw ValidationException::withMessages([
-                'email' => 'Your account has been deactivated. Please contact the administrator.',
+                'email' => 'Your account or company has been deactivated. Please contact the administrator.',
             ]);
         }
 

@@ -49,10 +49,17 @@ class CompanyController extends Controller
 
     public function toggleStatus(Company $company)
     {
-        $company->update([
-            'status' => $company->status === 'active' ? 'inactive' : 'active',
-        ]);
+        $newStatus = $company->status === 'active' ? 'inactive' : 'active';
+        $company->update(['status' => $newStatus]);
 
-        return back()->with('success', "Company {$company->name} has been " . ($company->fresh()->status === 'active' ? 'activated' : 'deactivated') . '.');
+        if ($newStatus === 'inactive') {
+            // Deactivate all users in the company
+            $company->users()->update(['status' => 'inactive']);
+        } else {
+            // Activate only the company admins
+            $company->users()->where('role', 'admin')->update(['status' => 'active']);
+        }
+
+        return back()->with('success', "Company {$company->name} has been " . ($newStatus === 'active' ? 'activated (Admins restored)' : 'deactivated (All users deactivated)') . '.');
     }
 }

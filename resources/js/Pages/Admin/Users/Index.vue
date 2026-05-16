@@ -10,9 +10,9 @@ const roleBadge = (role) => ({
     client:  'bg-orange-100 text-orange-700',
 }[role] ?? 'bg-gray-100 text-gray-700');
 
-const deactivate = (user) => {
-    if (confirm(`Deactivate ${user.name}?`)) {
-        router.delete(route('admin.users.destroy', user.id));
+const toggleStatus = (user) => {
+    if (confirm(`Are you sure you want to ${user.status === 'active' ? 'deactivate' : 'activate'} ${user.name}?`)) {
+        router.patch(route('admin.users.toggle-status', user.id), {}, { preserveScroll: true });
     }
 };
 </script>
@@ -88,7 +88,10 @@ const deactivate = (user) => {
                                 </td>
                                 <td class="px-6 py-4 text-right space-x-3">
                                     <Link :href="route('admin.users.edit', user.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium">Edit</Link>
-                                    <button v-if="user.status === 'active'" @click="deactivate(user)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-medium">Deactivate</button>
+                                    <button @click="toggleStatus(user)" class="text-sm font-medium transition-colors"
+                                        :class="user.status === 'active' ? 'text-red-600 dark:text-red-400 hover:text-red-900' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-900'">
+                                        {{ user.status === 'active' ? 'Deactivate' : 'Activate' }}
+                                    </button>
                                 </td>
                             </tr>
                             <tr v-if="users.length === 0">

@@ -6,6 +6,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     attendances: Array,
     stats:       Object,
+    absentees:   Array,
     filterDate:  String,
 });
 
@@ -119,6 +120,35 @@ const mapsUrl = (lat, lng) => lat && lng
                 <div v-if="Object.keys(groupedByDate).length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
                     <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <p class="text-gray-500 dark:text-gray-400">No attendance records found.</p>
+                </div>
+
+                <!-- Absentees List -->
+                <div v-if="absentees && absentees.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-100 dark:border-red-900/50 overflow-hidden">
+                    <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm text-red-900 dark:text-red-200">Absentees List</h3>
+                                <p class="text-xs text-red-600 dark:text-red-400">Users who have not clocked in on the selected date</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 text-xs font-semibold rounded-full">{{ absentees.length }} Absent</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div v-for="user in absentees" :key="user.id" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center font-bold text-sm flex-shrink-0 uppercase">
+                                    {{ user.name?.charAt(0) }}
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</p>
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize inline-block mt-0.5" :class="roleBadge(user.role)">{{ user.role }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div v-for="(records, date) in groupedByDate" :key="date" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">

@@ -36,7 +36,7 @@ class MeetingMinuteController extends Controller
     public function show(MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->company_id !== auth()->user()->company_id, 403);
-        $meetingMinute->load(['creator:id,name', 'reviews.reviewer:id,name']);
+        $meetingMinute->load(['creator:id,name', 'reviews.reviewer:id,name', 'attachments']);
 
         return Inertia::render('Admin/MeetingMinutes/Show', ['minute' => $meetingMinute]);
     }

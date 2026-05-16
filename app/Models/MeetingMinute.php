@@ -43,4 +43,9 @@ class MeetingMinute extends Model
     {
         return $this->meeting_date ? $this->meeting_date->format('jS M, Y g A') : null;
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(MeetingMinuteAttachment::class);
+    }
 }

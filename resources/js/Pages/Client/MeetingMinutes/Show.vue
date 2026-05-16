@@ -66,6 +66,31 @@ const duplicate = () => {
                     <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 prose max-w-none" v-html="minute.content"></div>
                 </div>
 
+                <!-- Attachments -->
+                <div v-if="minute.attachments && minute.attachments.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        Attachments ({{ minute.attachments.length }})
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div v-for="attachment in minute.attachments" :key="attachment.id" class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center space-x-3 truncate">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs flex-shrink-0 uppercase">
+                                    {{ attachment.file_type || 'FILE' }}
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ attachment.file_name }}</p>
+                                    <p class="text-xs text-gray-500">{{ attachment.file_size_formatted }}</p>
+                                </div>
+                            </div>
+                            <a :href="`/storage/${attachment.file_path}`" target="_blank" class="flex-shrink-0 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Review History -->
                 <div v-if="minute.reviews?.length" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 class="font-semibold text-gray-800 mb-4">Review History</h3>

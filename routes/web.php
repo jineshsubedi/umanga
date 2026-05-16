@@ -98,10 +98,11 @@ Route::middleware(['auth', 'verified', 'role:client'])
         Route::post('/meeting-minutes', [ClientMeetingMinuteController::class, 'store'])->name('meeting-minutes.store');
         Route::get('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
         Route::get('/meeting-minutes/{meetingMinute}/edit', [ClientMeetingMinuteController::class, 'edit'])->name('meeting-minutes.edit');
-        Route::put('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'update'])->name('meeting-minutes.update');
+        Route::match(['put', 'post'], '/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'update'])->name('meeting-minutes.update');
         Route::delete('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'destroy'])->name('meeting-minutes.destroy');
         Route::post('/meeting-minutes/{meetingMinute}/submit', [ClientMeetingMinuteController::class, 'submit'])->name('meeting-minutes.submit');
         Route::post('/meeting-minutes/{meetingMinute}/duplicate', [ClientMeetingMinuteController::class, 'duplicate'])->name('meeting-minutes.duplicate');
+        Route::delete('/meeting-minutes/attachments/{attachment}', [\App\Http\Controllers\Client\AttachmentController::class, 'destroy'])->name('meeting-minutes.attachments.destroy');
     });
 
 require __DIR__.'/auth.php';

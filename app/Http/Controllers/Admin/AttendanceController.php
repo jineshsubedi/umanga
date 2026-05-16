@@ -26,22 +26,27 @@ class AttendanceController extends Controller
 
         $attendances = $query->get();
 
-        // Today's summary stats for the company
-        $today = Carbon::today()->toDateString();
+        $targetDate = $request->filled('date') ? Carbon::parse($request->date)->toDateString() : Carbon::today()->toDateString();
+
+        $absentees = \App\Models\User::where('company_id', $companyId)
+            ->where('status', 'active')
+            ->whereNotIn('role', ['super_admin', 'admin'])
+            ->whereDoesntHave('attendances', fn($q) => $q->whereDate('date', $targetDate))
+            ->select('id', 'name', 'role')
+            ->get();
+
+        // Summary stats for the company
         $stats = [
-            'total_today'    => Attendance::where('company_id', $companyId)->whereDate('date', $today)->count(),
-            'clocked_in'     => Attendance::where('company_id', $companyId)->whereDate('date', $today)->whereNotNull('clock_in')->whereNull('clock_out')->count(),
-            'clocked_out'    => Attendance::where('company_id', $companyId)->whereDate('date', $today)->whereNotNull('clock_out')->count(),
-            'absent_today'   => \App\Models\User::where('company_id', $companyId)
-                ->where('status', 'active')
-                ->whereNotIn('role', ['super_admin', 'admin'])
-                ->whereDoesntHave('attendances', fn($q) => $q->whereDate('date', $today))
-                ->count(),
+            'total_today'    => Attendance::where('company_id', $companyId)->whereDate('date', $targetDate)->count(),
+            'clocked_in'     => Attendance::where('company_id', $companyId)->whereDate('date', $targetDate)->whereNotNull('clock_in')->whereNull('clock_out')->count(),
+            'clocked_out'    => Attendance::where('company_id', $companyId)->whereDate('date', $targetDate)->whereNotNull('clock_out')->count(),
+            'absent_today'   => $absentees->count(),
         ];
 
         return Inertia::render('Admin/Attendance/Index', [
             'attendances'  => $attendances,
             'stats'        => $stats,
+            'absentees'    => $absentees,
             'filterDate'   => $request->date,
         ]);
     }

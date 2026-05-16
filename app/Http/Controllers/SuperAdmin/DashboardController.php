@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
+use Illuminate\Http\Request;
+
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $stats = [
             'total_companies'    => Company::count(),
@@ -49,16 +51,59 @@ class DashboardController extends Controller
                                       ->count();
         }
 
+        // Filters for Daily Minutes Chart
+        $selectedYear = $request->input('year', Carbon::now()->year);
+        $selectedMonth = $request->input('month', Carbon::now()->month);
+
+        $targetDate = Carbon::createFromDate($selectedYear, $selectedMonth, 1);
+        $daysInMonth = $targetDate->daysInMonth;
+
+        $daysLabels = [];
+        $dayCreated = [];
+        $dayApproved = [];
+        $dayRejected = [];
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $daysLabels[] = $d;
+            $dayCreated[] = MeetingMinute::whereYear('created_at', $selectedYear)
+                                         ->whereMonth('created_at', $selectedMonth)
+                                         ->whereDay('created_at', $d)
+                                         ->count();
+            $dayApproved[] = MeetingMinute::whereYear('created_at', $selectedYear)
+                                          ->whereMonth('created_at', $selectedMonth)
+                                          ->whereDay('created_at', $d)
+                                          ->where('status', 'approved')
+                                          ->count();
+            $dayRejected[] = MeetingMinute::whereYear('created_at', $selectedYear)
+                                          ->whereMonth('created_at', $selectedMonth)
+                                          ->whereDay('created_at', $d)
+                                          ->where('status', 'rejected')
+                                          ->count();
+        }
+
         $chartData = [
             'labels' => $months,
             'minutes' => $minutesData,
             'companies' => $companiesData,
-            'max_y' => max(10, max($minutesData) + 5, max($companiesData) + 5) // For scaling the CSS bars
+            'max_y' => max(10, max($minutesData) + 5, max($companiesData) + 5),
+            'days_labels' => $daysLabels,
+            'day_created' => $dayCreated,
+            'day_approved' => $dayApproved,
+            'day_rejected' => $dayRejected,
+            'max_status_y' => max(5, max($dayCreated) + 2),
         ];
+
+        $earliestYear = MeetingMinute::min(DB::raw('YEAR(created_at)')) ?? Carbon::now()->year;
+        $availableYears = range($earliestYear, Carbon::now()->year + 1);
 
         return Inertia::render('SuperAdmin/Dashboard', [
             'stats' => $stats,
-            'chartData' => $chartData
+            'chartData' => $chartData,
+            'filters' => [
+                'year' => (int) $selectedYear,
+                'month' => (int) $selectedMonth,
+            ],
+            'availableYears' => $availableYears
         ]);
     }
 }

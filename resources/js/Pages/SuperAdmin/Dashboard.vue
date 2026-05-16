@@ -1,13 +1,29 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
-const props = defineProps({ stats: Object, chartData: Object });
+const props = defineProps({ stats: Object, chartData: Object, filters: Object, availableYears: Array });
+
+const filterYear = ref(props.filters?.year || new Date().getFullYear());
+const filterMonth = ref(props.filters?.month || (new Date().getMonth() + 1));
+
+const updateFilter = () => {
+    router.get(route('super-admin.dashboard'), {
+        year: filterYear.value,
+        month: filterMonth.value
+    }, { preserveState: true, preserveScroll: true });
+};
 
 // Helper to calculate the height of a bar relative to the maximum Y value
 const calcHeight = (val) => {
     if (props.chartData.max_y === 0) return '0%';
     return `${(val / props.chartData.max_y) * 100}%`;
+};
+
+const calcStatusHeight = (val) => {
+    if (props.chartData.max_status_y === 0) return '0%';
+    return `${(val / props.chartData.max_status_y) * 100}%`;
 };
 </script>
 
@@ -166,6 +182,77 @@ const calcHeight = (val) => {
                                      :style="{ height: calcHeight(val) }"></div>
                                 <span class="absolute -top-6 text-xs font-semibold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">{{ val }}</span>
                                 <span class="absolute -bottom-6 text-xs font-medium text-gray-500">{{ chartData.labels[index] }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Month Daily Minutes Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 col-span-full">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Daily Minutes (Created vs Approved vs Rejected)</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Showing data for selected year and month</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-4">
+                                <div class="flex items-center gap-2">
+                                    <select v-model="filterYear" @change="updateFilter" class="text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-1.5 px-3">
+                                        <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+                                    </select>
+                                    <select v-model="filterMonth" @change="updateFilter" class="text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-1.5 px-3">
+                                        <option :value="1">January</option>
+                                        <option :value="2">February</option>
+                                        <option :value="3">March</option>
+                                        <option :value="4">April</option>
+                                        <option :value="5">May</option>
+                                        <option :value="6">June</option>
+                                        <option :value="7">July</option>
+                                        <option :value="8">August</option>
+                                        <option :value="9">September</option>
+                                        <option :value="10">October</option>
+                                        <option :value="11">November</option>
+                                        <option :value="12">December</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs font-medium text-gray-600 border-l border-gray-200 pl-4 sm:pl-4">
+                                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-blue-500"></span> Created</span>
+                                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-green-500"></span> Approved</span>
+                                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-500"></span> Rejected</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto pb-4">
+                            <div class="relative h-64 min-w-[700px] flex items-end justify-between gap-2 pt-6 border-b border-gray-200">
+                                <!-- Y-axis scale lines -->
+                                <div class="absolute inset-0 flex flex-col justify-between text-xs text-gray-400 pointer-events-none pb-6">
+                                    <span>{{ chartData.max_status_y }}</span>
+                                    <span>{{ Math.round(chartData.max_status_y / 2) }}</span>
+                                    <span>0</span>
+                                </div>
+                                
+                                <!-- Daily Groups -->
+                                <div v-for="(day, index) in chartData.days_labels" :key="'d-'+index" 
+                                    class="relative flex-1 flex items-end justify-center gap-0.5 h-full z-10 pb-1 group">
+                                    
+                                    <!-- Created Bar -->
+                                    <div class="w-full max-w-[12px] bg-blue-500 rounded-t-sm transition-all duration-500 group-hover:bg-blue-600 relative"
+                                         :style="{ height: calcStatusHeight(chartData.day_created[index]) }">
+                                        <span v-if="chartData.day_created[index] > 0" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">{{ chartData.day_created[index] }}</span>
+                                    </div>
+
+                                    <!-- Approved Bar -->
+                                    <div class="w-full max-w-[12px] bg-green-500 rounded-t-sm transition-all duration-500 group-hover:bg-green-600 relative"
+                                         :style="{ height: calcStatusHeight(chartData.day_approved[index]) }">
+                                        <span v-if="chartData.day_approved[index] > 0" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-green-600 opacity-0 group-hover:opacity-100 transition-opacity">{{ chartData.day_approved[index] }}</span>
+                                    </div>
+
+                                    <!-- Rejected Bar -->
+                                    <div class="w-full max-w-[12px] bg-red-500 rounded-t-sm transition-all duration-500 group-hover:bg-red-600 relative"
+                                         :style="{ height: calcStatusHeight(chartData.day_rejected[index]) }">
+                                        <span v-if="chartData.day_rejected[index] > 0" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">{{ chartData.day_rejected[index] }}</span>
+                                    </div>
+
+                                    <span class="absolute -bottom-6 text-[11px] font-medium text-gray-500">{{ day }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

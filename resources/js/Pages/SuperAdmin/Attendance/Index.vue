@@ -6,6 +6,7 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     attendances:     Array,
     stats:           Object,
+    absentees:       Array,
     companies:       Array,
     filterDate:      String,
     filterCompanyId: [String, Number],
@@ -69,7 +70,7 @@ const mapsUrl = (lat, lng) => lat && lng
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
                 <!-- Today's Platform-wide Stats -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
                         <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
                             <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -90,6 +91,13 @@ const mapsUrl = (lat, lng) => lat && lng
                         </div>
                         <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.clocked_out }}</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Clocked Out</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+                        <div class="w-10 h-10 bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l-2-2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.absentees_count }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Absent Today</p>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
                         <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -130,6 +138,38 @@ const mapsUrl = (lat, lng) => lat && lng
                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
                     <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <p class="text-gray-500 dark:text-gray-400">No attendance records found for the selected filters.</p>
+                </div>
+
+                <!-- Absentees List -->
+                <div v-if="absentees && absentees.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-100 dark:border-red-900/50 overflow-hidden">
+                    <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-sm text-red-900 dark:text-red-200">Absentees List</h3>
+                                <p class="text-xs text-red-600 dark:text-red-400">Users who have not clocked in on the selected date</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 text-xs font-semibold rounded-full">{{ absentees.length }} Absent</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div v-for="user in absentees" :key="user.id" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center font-bold text-sm flex-shrink-0 uppercase">
+                                    {{ user.name?.charAt(0) }}
+                                </div>
+                                <div class="truncate">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</p>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize" :class="roleBadge(user.role)">{{ user.role }}</span>
+                                        <span v-if="user.company" class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user.company.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Records grouped by date -->

@@ -28,13 +28,27 @@ class AttendanceController extends Controller
 
         $attendances = $query->get();
 
-        $today = Carbon::today()->toDateString();
+        $targetDate = $request->filled('date') ? Carbon::parse($request->date)->toDateString() : Carbon::today()->toDateString();
+
+        $absenteesQuery = User::where('status', 'active')
+            ->whereNotIn('role', ['super_admin', 'admin'])
+            ->with('company:id,name')
+            ->whereDoesntHave('attendances', function ($q) use ($targetDate) {
+                $q->whereDate('date', $targetDate);
+            });
+
+        if ($request->filled('company_id')) {
+            $absenteesQuery->where('company_id', $request->company_id);
+        }
+
+        $absentees = $absenteesQuery->select('id', 'name', 'role', 'company_id')->get();
 
         $stats = [
-            'total_today'   => Attendance::whereDate('date', $today)->count(),
-            'clocked_in'    => Attendance::whereDate('date', $today)->whereNotNull('clock_in')->whereNull('clock_out')->count(),
-            'clocked_out'   => Attendance::whereDate('date', $today)->whereNotNull('clock_out')->count(),
-            'total_users'   => User::where('status', 'active')->whereNotIn('role', ['super_admin'])->count(),
+            'total_today'   => Attendance::whereDate('date', $targetDate)->count(),
+            'clocked_in'    => Attendance::whereDate('date', $targetDate)->whereNotNull('clock_in')->whereNull('clock_out')->count(),
+            'clocked_out'   => Attendance::whereDate('date', $targetDate)->whereNotNull('clock_out')->count(),
+            'total_users'   => User::where('status', 'active')->whereNotIn('role', ['super_admin', 'admin'])->count(),
+            'absentees_count' => $absentees->count(),
         ];
 
         $companies = Company::select('id', 'name')->orderBy('name')->get();
@@ -42,6 +56,7 @@ class AttendanceController extends Controller
         return Inertia::render('SuperAdmin/Attendance/Index', [
             'attendances'      => $attendances,
             'stats'            => $stats,
+            'absentees'        => $absentees,
             'companies'        => $companies,
             'filterDate'       => $request->date,
             'filterCompanyId'  => $request->company_id,

@@ -1,0 +1,80 @@
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+
+const props = defineProps({ minute: Object });
+
+const submit = () => router.post(route('client.meeting-minutes.submit', props.minute.id));
+</script>
+
+<template>
+    <Head :title="minute.title" />
+    <AuthenticatedLayout>
+        <template #header>
+            <div class="flex items-center gap-3">
+                <Link :href="route('client.meeting-minutes.index')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </Link>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-semibold text-gray-900">{{ minute.title }}</h2>
+                    <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
+                        :class="{
+                            'bg-gray-100 text-gray-600': minute.status === 'draft',
+                            'bg-yellow-100 text-yellow-700': minute.status === 'pending',
+                            'bg-green-100 text-green-700': minute.status === 'approved',
+                            'bg-red-100 text-red-700': minute.status === 'rejected',
+                        }">{{ minute.status }}</span>
+                </div>
+            </div>
+        </template>
+
+        <div class="py-8">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                <!-- Actions -->
+                <div v-if="['draft','rejected'].includes(minute.status)" class="flex gap-3">
+                    <Link :href="route('client.meeting-minutes.edit', minute.id)"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        Edit
+                    </Link>
+                    <button @click="submit"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        Submit for Approval
+                    </button>
+                </div>
+
+                <!-- Minute Content -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
+                        <div>
+                            <p class="text-sm text-gray-500">Meeting Date</p>
+                            <p class="font-medium text-gray-800">{{ minute.meeting_date }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 prose max-w-none" v-html="minute.content"></div>
+                </div>
+
+                <!-- Review History -->
+                <div v-if="minute.reviews?.length" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4">Review History</h3>
+                    <div class="space-y-3">
+                        <div v-for="review in minute.reviews" :key="review.id"
+                            class="flex gap-3 p-3 rounded-lg"
+                            :class="review.status === 'approved' ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                                :class="review.status === 'approved' ? 'bg-green-500' : 'bg-red-500'">
+                                {{ review.reviewer?.name?.charAt(0) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">
+                                    {{ review.reviewer?.name }}
+                                    <span class="font-semibold capitalize ml-1" :class="review.status === 'approved' ? 'text-green-700' : 'text-red-700'">{{ review.status }}</span>
+                                </p>
+                                <p v-if="review.comment" class="text-sm text-gray-600 mt-1">{{ review.comment }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>

@@ -19,7 +19,17 @@ class AttendanceController extends Controller
         $user  = auth()->user();
         $today = Carbon::today()->toDateString();
 
-        if (Attendance::where('user_id', $user->id)->where('date', $today)->exists()) {
+        $existing = Attendance::where('user_id', $user->id)->where('date', $today)->first();
+
+        if ($existing) {
+            if (!$existing->clock_in_lat && $request->lat) {
+                $existing->update([
+                    'clock_in_lat'     => $request->lat,
+                    'clock_in_lng'     => $request->lng,
+                    'clock_in_address' => $request->address,
+                ]);
+                return back()->with('success', 'Clock in location captured successfully!');
+            }
             return back()->with('error', 'You have already clocked in today.');
         }
 
@@ -53,6 +63,14 @@ class AttendanceController extends Controller
         }
 
         if ($record->clock_out) {
+            if (!$record->clock_out_lat && $request->lat) {
+                $record->update([
+                    'clock_out_lat'     => $request->lat,
+                    'clock_out_lng'     => $request->lng,
+                    'clock_out_address' => $request->address,
+                ]);
+                return back()->with('success', 'Clock out location captured successfully!');
+            }
             return back()->with('error', 'You have already clocked out today.');
         }
 

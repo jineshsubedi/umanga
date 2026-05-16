@@ -29,13 +29,18 @@ const fetchGeo = () => new Promise((resolve) => {
             const lng = pos.coords.longitude;
             const base = { lat, lng, address: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
             // Reverse geocode via Nominatim (no API key needed)
-            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+                headers: { 'User-Agent': 'UMNG-Attendance-App/1.0' }
+            })
                 .then(r => r.json())
                 .then(d => resolve({ ...base, address: d.display_name || base.address }))
                 .catch(() => resolve(base));
         },
-        () => resolve({}),
-        { timeout: 5000 }
+        (err) => {
+            console.warn("Geolocation error:", err);
+            resolve({});
+        },
+        { enableHighAccuracy: true, timeout: 60000, maximumAge: 0 }
     );
 });
 
@@ -55,7 +60,8 @@ const handleClockOut = async () => {
 
 // Auto-dismiss alerts
 const showSuccess = ref(false);
-const showError = ref(false);
+const showError   = ref(false);
+const userMenuOpen = ref(false);
 
 watch(() => flash.value?.success, (val) => {
     if (val) {
@@ -89,6 +95,7 @@ const navigation = computed(() => {
     if (role.value === 'super_admin') {
         nav.push({ name: 'Dashboard', href: route('super-admin.dashboard'), current: route().current('super-admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.companies.*'), icon: 'office' });
+        nav.push({ name: 'Users', href: route('super-admin.users.index'), current: route().current('super-admin.users.*'), icon: 'users' });
         nav.push({ name: 'Attendance', href: route('super-admin.attendance.index'), current: route().current('super-admin.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'manager') {
@@ -167,28 +174,42 @@ const navigation = computed(() => {
                     </button>
                 </div>
 
-                <div class="flex items-center group">
+                <div class="relative flex items-center group">
                     <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold shadow-inner">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-md ring-2 ring-white dark:ring-gray-700">
                             {{ user?.name?.charAt(0) || 'U' }}
                         </div>
                     </div>
                     <div class="ml-3 flex-1 overflow-hidden">
-                        <p class="text-sm font-medium text-gray-700 dark:text-white truncate">{{ user?.name }}</p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ user?.name }}</p>
                         <p class="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">{{ user?.email }}</p>
                     </div>
-                    <!-- Settings Dropdown -->
-                    <Dropdown align="right" width="48" class="ml-2">
-                        <template #trigger>
-                            <button type="button" class="p-1 rounded-full text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                            </button>
-                        </template>
-                        <template #content>
-                            <DropdownLink :href="route('profile.edit')">Profile</DropdownLink>
-                            <DropdownLink :href="route('logout')" method="post" as="button">Log Out</DropdownLink>
-                        </template>
-                    </Dropdown>
+                    
+                    <!-- Custom Dropup Menu Trigger -->
+                    <button @click="userMenuOpen = !userMenuOpen" type="button" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all focus:outline-none">
+                        <svg class="w-5 h-5 transform transition-transform" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                    </button>
+
+                    <!-- Full screen backdrop for closing -->
+                    <div v-if="userMenuOpen" class="fixed inset-0 z-40" @click="userMenuOpen = false"></div>
+
+                    <!-- Floating Dropup Menu Box -->
+                    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 translate-y-2 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0 scale-100" leave-to-class="opacity-0 translate-y-2 scale-95">
+                        <div v-if="userMenuOpen" class="absolute bottom-14 right-0 z-50 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden py-1 mb-2 ring-1 ring-black ring-opacity-5">
+                            <div class="px-4 py-2 border-b border-gray-50 dark:border-gray-700/50">
+                                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Signed in as</p>
+                                <p class="text-xs font-semibold text-gray-900 dark:text-white truncate mt-0.5">{{ user?.email }}</p>
+                            </div>
+                            <Link :href="route('profile.edit')" @click="userMenuOpen = false" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                Profile Settings
+                            </Link>
+                            <Link :href="route('logout')" method="post" as="button" @click="userMenuOpen = false" class="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-left border-t border-gray-50 dark:border-gray-700/50">
+                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                Log Out
+                            </Link>
+                        </div>
+                    </Transition>
                 </div>
             </div>
         </div>

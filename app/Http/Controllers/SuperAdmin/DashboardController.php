@@ -15,10 +15,18 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
-            'total_companies' => Company::count(),
-            'active_companies'=> Company::where('status', 'active')->count(),
-            'total_users'     => User::count(),
-            'total_minutes'   => MeetingMinute::count(),
+            'total_companies'    => Company::count(),
+            'active_companies'   => Company::where('status', 'active')->count(),
+            'inactive_companies' => Company::where('status', 'inactive')->count(),
+            'total_users'        => User::where('role', '!=', 'super_admin')->count(),
+            'active_users'       => User::where('status', 'active')->where('role', '!=', 'super_admin')->count(),
+            'admins_count'       => User::where('role', 'admin')->where('status', 'active')->count(),
+            'managers_count'     => User::where('role', 'manager')->where('status', 'active')->count(),
+            'clients_count'      => User::where('role', 'client')->where('status', 'active')->count(),
+            'total_minutes'      => MeetingMinute::count(),
+            'present_today'      => \App\Models\Attendance::whereDate('date', Carbon::today())->count(),
+            'clocked_in_now'     => \App\Models\Attendance::whereDate('date', Carbon::today())->whereNotNull('clock_in')->whereNull('clock_out')->count(),
+            'completed_today'    => \App\Models\Attendance::whereDate('date', Carbon::today())->whereNotNull('clock_out')->count(),
         ];
 
         // Graph Data: Minutes created per month over the last 6 months

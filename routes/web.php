@@ -61,6 +61,8 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
         Route::patch('/companies/{company}/toggle-status', [CompanyController::class, 'toggleStatus'])->name('companies.toggle-status');
         Route::get('/attendance', [\App\Http\Controllers\SuperAdmin\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/users', [\App\Http\Controllers\SuperAdmin\UserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\SuperAdmin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────

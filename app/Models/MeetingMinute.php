@@ -48,4 +48,9 @@ class MeetingMinute extends Model
     {
         return $this->hasMany(MeetingMinuteAttachment::class);
     }
+
+    public function managers()
+    {
+        return $this->belongsToMany(User::class, 'meeting_minute_managers', 'meeting_minute_id', 'manager_id');
+    }
 }

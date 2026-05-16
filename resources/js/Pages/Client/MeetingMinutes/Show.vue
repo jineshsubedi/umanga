@@ -57,10 +57,18 @@ const duplicate = () => {
 
                 <!-- Minute Content -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
+                    <div class="flex items-center gap-6 mb-4 pb-4 border-b border-gray-100">
                         <div>
                             <p class="text-sm text-gray-500">Meeting Date</p>
                             <p class="font-medium text-gray-800">{{ minute.formatted_meeting_date }}</p>
+                        </div>
+                        <div v-if="minute.managers && minute.managers.length > 0" class="border-l border-gray-100 pl-6">
+                            <p class="text-sm text-gray-500">Assigned Managers</p>
+                            <div class="flex flex-wrap gap-1.5 mt-1">
+                                <span v-for="m in minute.managers" :key="m.id" class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium border border-indigo-100">
+                                    {{ m.name }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 prose max-w-none" v-html="minute.content"></div>

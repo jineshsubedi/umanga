@@ -15,7 +15,7 @@ class MeetingMinuteController extends Controller
     public function index()
     {
         $minutes = MeetingMinute::where('created_by', auth()->id())
-            ->with('latestReview.reviewer:id,name')
+            ->with(['latestReview.reviewer:id,name', 'managers:id,name'])
             ->latest()
             ->get();
 
@@ -24,7 +24,13 @@ class MeetingMinuteController extends Controller
 
     public function create()
     {
-        return Inertia::render('Client/MeetingMinutes/Create');
+        $managers = User::where('company_id', auth()->user()->company_id)
+            ->where('role', 'manager')
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->get();
+
+        return Inertia::render('Client/MeetingMinutes/Create', compact('managers'));
     }
 
     public function store(Request $request)
@@ -33,6 +39,8 @@ class MeetingMinuteController extends Controller
             'title'        => 'required|string|max:255',
             'content'      => 'required|string',
             'meeting_date' => 'required|date',
+            'manager_ids'  => 'required|array|min:1',
+            'manager_ids.*'=> 'exists:users,id',
             'attachments.*'=> 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,ppt,pptx,txt|max:10240',
         ]);
 
@@ -44,6 +52,8 @@ class MeetingMinuteController extends Controller
             'meeting_date' => $request->meeting_date,
             'status'       => 'draft',
         ]);
+
+        $meetingMinute->managers()->sync($request->manager_ids);
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -64,7 +74,7 @@ class MeetingMinuteController extends Controller
     public function show(MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->created_by !== auth()->id(), 403);
-        $meetingMinute->load(['reviews.reviewer:id,name', 'attachments']);
+        $meetingMinute->load(['reviews.reviewer:id,name', 'attachments', 'managers:id,name']);
 
         return Inertia::render('Client/MeetingMinutes/Show', ['minute' => $meetingMinute]);
     }
@@ -73,9 +83,18 @@ class MeetingMinuteController extends Controller
     {
         abort_if($meetingMinute->created_by !== auth()->id(), 403);
         abort_if($meetingMinute->status !== 'draft', 422, 'Cannot edit this minute.');
-        $meetingMinute->load(['latestReview', 'attachments']);
+        $meetingMinute->load(['latestReview', 'attachments', 'managers:id,name']);
 
-        return Inertia::render('Client/MeetingMinutes/Edit', ['minute' => $meetingMinute]);
+        $managers = User::where('company_id', auth()->user()->company_id)
+            ->where('role', 'manager')
+            ->where('status', 'active')
+            ->select('id', 'name')
+            ->get();
+
+        return Inertia::render('Client/MeetingMinutes/Edit', [
+            'minute' => $meetingMinute,
+            'managers' => $managers,
+        ]);
     }
 
     public function update(Request $request, MeetingMinute $meetingMinute)
@@ -87,10 +106,13 @@ class MeetingMinuteController extends Controller
             'title'        => 'required|string|max:255',
             'content'      => 'required|string',
             'meeting_date' => 'required|date',
+            'manager_ids'  => 'required|array|min:1',
+            'manager_ids.*'=> 'exists:users,id',
             'attachments.*'=> 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,ppt,pptx,txt|max:10240',
         ]);
 
         $meetingMinute->update($request->only('title', 'content', 'meeting_date'));
+        $meetingMinute->managers()->sync($request->manager_ids);
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -115,11 +137,8 @@ class MeetingMinuteController extends Controller
 
         $meetingMinute->update(['status' => 'pending']);
 
-        // Notify managers
-        $managers = User::where('company_id', $meetingMinute->company_id)
-            ->where('role', 'manager')
-            ->where('status', 'active')
-            ->get();
+        // Notify assigned managers
+        $managers = $meetingMinute->managers()->where('status', 'active')->get();
             
         Notification::send($managers, new MinuteSubmitted($meetingMinute));
 
@@ -145,6 +164,8 @@ class MeetingMinuteController extends Controller
         $newMinute->status = 'draft';
         $newMinute->title = $newMinute->title . ' (Revision)';
         $newMinute->save();
+
+        $newMinute->managers()->sync($meetingMinute->managers->pluck('id'));
 
         foreach ($meetingMinute->attachments as $attachment) {
             $newMinute->attachments()->create([

@@ -15,17 +15,21 @@ class MeetingMinuteController extends Controller
     {
         $status = $request->get('status', 'pending');
         $companyId = auth()->user()->company_id;
+        $managerId = auth()->id();
 
         $minutes = MeetingMinute::with('creator:id,name,email')
             ->where('company_id', $companyId)
+            ->whereHas('managers', function ($q) use ($managerId) {
+                $q->where('manager_id', $managerId);
+            })
             ->where('status', $status)
             ->latest()
             ->get();
 
         $counts = [
-            'pending'  => MeetingMinute::where('company_id', $companyId)->where('status', 'pending')->count(),
-            'approved' => MeetingMinute::where('company_id', $companyId)->where('status', 'approved')->count(),
-            'rejected' => MeetingMinute::where('company_id', $companyId)->where('status', 'rejected')->count(),
+            'pending'  => MeetingMinute::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'pending')->count(),
+            'approved' => MeetingMinute::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'approved')->count(),
+            'rejected' => MeetingMinute::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'rejected')->count(),
         ];
 
         return Inertia::render('Manager/MeetingMinutes/Index', compact('minutes', 'counts', 'status'));
@@ -34,6 +38,7 @@ class MeetingMinuteController extends Controller
     public function show(MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->company_id !== auth()->user()->company_id, 403);
+        abort_if(!$meetingMinute->managers()->where('manager_id', auth()->id())->exists(), 403, 'You are not assigned to review this minute.');
         $meetingMinute->load(['creator:id,name,email', 'reviews.reviewer:id,name', 'attachments']);
 
         return Inertia::render('Manager/MeetingMinutes/Show', ['minute' => $meetingMinute]);
@@ -42,6 +47,7 @@ class MeetingMinuteController extends Controller
     public function review(Request $request, MeetingMinute $meetingMinute)
     {
         abort_if($meetingMinute->company_id !== auth()->user()->company_id, 403);
+        abort_if(!$meetingMinute->managers()->where('manager_id', auth()->id())->exists(), 403, 'You are not assigned to review this minute.');
         abort_if($meetingMinute->status !== 'pending', 422, 'This minute is not pending review.');
 
         $request->validate([

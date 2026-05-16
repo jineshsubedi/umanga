@@ -6,19 +6,46 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import RichTextEditor from '@/Components/RichTextEditor.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps({ minute: Object });
+const props = defineProps({ minute: Object, managers: Array });
 
 const form = useForm({
     title: props.minute.title,
     content: props.minute.content,
     meeting_date: props.minute.meeting_date ? new Date(props.minute.meeting_date).toISOString().slice(0, 16) : '',
+    manager_ids: props.minute.managers?.map(m => m.id) || [],
     attachments: [],
     _method: 'put',
 });
 
 const fileInput = ref(null);
+
+const isOpen = ref(false);
+const searchQuery = ref('');
+
+const filteredManagers = computed(() => {
+    if (!searchQuery.value) return props.managers;
+    return props.managers.filter(m => m.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
+});
+
+const toggleManager = (id) => {
+    const index = form.manager_ids.indexOf(id);
+    if (index === -1) {
+        form.manager_ids.push(id);
+    } else {
+        form.manager_ids.splice(index, 1);
+    }
+};
+
+const closeDropdown = (e) => {
+    if (!e.target.closest('.manager-dropdown')) {
+        isOpen.value = false;
+    }
+};
+
+onMounted(() => document.addEventListener('click', closeDropdown));
+onUnmounted(() => document.removeEventListener('click', closeDropdown));
 
 const handleFileChange = (e) => {
     form.attachments = Array.from(e.target.files);
@@ -85,6 +112,57 @@ const submit = () => form.post(route('client.meeting-minutes.update', props.minu
                                 <RichTextEditor v-model="form.content" />
                             </div>
                             <InputError class="mt-2" :message="form.errors.content" />
+                        </div>
+
+                        <!-- Multi-select Dropdown with Search -->
+                        <div class="relative manager-dropdown">
+                            <InputLabel value="Assign Managers to Approve" />
+                            <div class="mt-1 relative">
+                                <!-- Selected Pills + Trigger -->
+                                <div @click="isOpen = !isOpen" class="min-h-[42px] p-1.5 bg-white border border-gray-300 rounded-lg shadow-sm flex flex-wrap items-center gap-1.5 cursor-pointer focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                                    <div v-if="form.manager_ids.length === 0" class="text-sm text-gray-400 px-2 py-1">
+                                        Select managers...
+                                    </div>
+                                    <span v-for="id in form.manager_ids" :key="id" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-medium">
+                                        {{ managers.find(m => m.id === id)?.name }}
+                                        <button type="button" @click.stop="toggleManager(id)" class="text-indigo-400 hover:text-indigo-600 focus:outline-none">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </span>
+                                    <div class="ml-auto pr-2 text-gray-400">
+                                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'transform rotate-180': isOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown Menu -->
+                                <div v-if="isOpen" class="absolute z-50 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-2 max-h-60 overflow-y-auto">
+                                    <div class="px-3 pb-2 border-b border-gray-100">
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                            </div>
+                                            <input type="text" v-model="searchQuery" @click.stop placeholder="Search managers..." class="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:bg-white" />
+                                        </div>
+                                    </div>
+                                    <div class="pt-1">
+                                        <div v-if="filteredManagers.length === 0" class="px-4 py-3 text-sm text-gray-500 text-center italic">
+                                            No managers found.
+                                        </div>
+                                        <div v-for="manager in filteredManagers" :key="manager.id" @click.stop="toggleManager(manager.id)" class="px-4 py-2.5 flex items-center justify-between text-sm hover:bg-gray-50 cursor-pointer transition-colors" :class="{ 'bg-indigo-50/50 text-indigo-900 font-medium': form.manager_ids.includes(manager.id) }">
+                                            <div class="flex items-center gap-2.5 truncate">
+                                                <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+                                                    {{ manager.name?.charAt(0) }}
+                                                </div>
+                                                <span class="truncate">{{ manager.name }}</span>
+                                            </div>
+                                            <div v-if="form.manager_ids.includes(manager.id)" class="text-indigo-600">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <InputError class="mt-2" :message="form.errors.manager_ids" />
                         </div>
 
                         <!-- Existing Attachments -->

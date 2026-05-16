@@ -61,6 +61,12 @@ const duplicate = (minute) => {
                                     <span class="text-xs text-gray-400">{{ minute.formatted_meeting_date }}</span>
                                 </div>
                                 <h3 class="text-base font-semibold text-gray-900 truncate">{{ minute.title }}</h3>
+                                <div v-if="minute.managers && minute.managers.length > 0" class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                    <span class="text-xs text-gray-500 font-medium">Assigned to:</span>
+                                    <span v-for="m in minute.managers" :key="m.id" class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[11px] font-medium border border-indigo-100">
+                                        {{ m.name }}
+                                    </span>
+                                </div>
 
                                 <!-- Rejection comment -->
                                 <div v-if="minute.status === 'rejected' && minute.latest_review?.comment"

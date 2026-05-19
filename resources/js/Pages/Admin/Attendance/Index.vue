@@ -11,6 +11,7 @@ const props = defineProps({
 });
 
 const dateFilter = ref(props.filterDate || '');
+const showAbsentees = ref(false);
 
 const applyFilter = () => {
     router.get(route('admin.attendance.index'), { date: dateFilter.value }, { preserveState: true });
@@ -124,7 +125,7 @@ const mapsUrl = (lat, lng) => lat && lng
 
                 <!-- Absentees List -->
                 <div v-if="absentees && absentees.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-100 dark:border-red-900/50 overflow-hidden">
-                    <div class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 flex items-center justify-between">
+                    <div @click="showAbsentees = !showAbsentees" class="px-6 py-4 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/50 flex items-center justify-between cursor-pointer select-none group">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -134,9 +135,14 @@ const mapsUrl = (lat, lng) => lat && lng
                                 <p class="text-xs text-red-600 dark:text-red-400">Users who have not clocked in on the selected date</p>
                             </div>
                         </div>
-                        <span class="px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 text-xs font-semibold rounded-full">{{ absentees.length }} Absent</span>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 text-xs font-semibold rounded-full">{{ absentees.length }} Absent</span>
+                            <svg class="w-5 h-5 text-red-500 dark:text-red-400 transform transition-transform duration-200" :class="{ 'rotate-180': showAbsentees }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
                     </div>
-                    <div class="p-6">
+                    <div v-show="showAbsentees" class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <div v-for="user in absentees" :key="user.id" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700">
                                 <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center font-bold text-sm flex-shrink-0 uppercase">

@@ -32,9 +32,6 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
 
-
-
-    
       - laravel
 
   # MySQL Service

@@ -14,6 +14,7 @@ class MeetingMinuteController extends Controller
         $status = $request->query('status', 'all');
 
         $query = MeetingMinute::where('company_id', auth()->user()->company_id)
+            ->where('status', '!=', 'draft')
             ->with(['creator:id,name', 'latestReview.reviewer:id,name']);
 
         if ($status !== 'all') {
@@ -23,8 +24,7 @@ class MeetingMinuteController extends Controller
         $minutes = $query->latest()->get();
 
         $counts = [
-            'all'      => MeetingMinute::where('company_id', auth()->user()->company_id)->count(),
-            'draft'    => MeetingMinute::where('company_id', auth()->user()->company_id)->where('status', 'draft')->count(),
+            'all'      => MeetingMinute::where('company_id', auth()->user()->company_id)->where('status', '!=', 'draft')->count(),
             'pending'  => MeetingMinute::where('company_id', auth()->user()->company_id)->where('status', 'pending')->count(),
             'approved' => MeetingMinute::where('company_id', auth()->user()->company_id)->where('status', 'approved')->count(),
             'rejected' => MeetingMinute::where('company_id', auth()->user()->company_id)->where('status', 'rejected')->count(),

@@ -30,7 +30,7 @@ class AttendanceController extends Controller
 
         $absentees = \App\Models\User::where('company_id', $companyId)
             ->where('status', 'active')
-            ->whereNotIn('role', ['super_admin', 'admin'])
+            ->whereNotIn('role', ['super_admin'])
             ->whereDoesntHave('attendances', fn($q) => $q->whereDate('date', $targetDate))
             ->select('id', 'name', 'role')
             ->get();

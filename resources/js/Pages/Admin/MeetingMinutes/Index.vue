@@ -11,14 +11,14 @@ const statusBadge = (s) => ({
     rejected: 'bg-red-100 text-red-700',
 }[s] ?? 'bg-gray-100 text-gray-600');
 
-const tabs = ['all', 'draft', 'pending', 'approved', 'rejected'];
+const tabs = ['all', 'pending', 'approved', 'rejected'];
 </script>
 
 <template>
     <Head title="Company Meeting Minutes" />
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold text-gray-900">Company Meeting Minutes</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Company Meeting Minutes</h2>
         </template>
 
         <div class="py-8">

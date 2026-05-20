@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/meeting-minutes', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
         Route::get('/meeting-minutes/{meetingMinute}', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
         Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
     });
 
 // ─── Manager ─────────────────────────────────────────────────────────────────
@@ -86,6 +87,7 @@ Route::middleware(['auth', 'verified', 'role:manager'])
         Route::get('/meeting-minutes', [ManagerMeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
         Route::get('/meeting-minutes/{meetingMinute}', [ManagerMeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
         Route::post('/meeting-minutes/{meetingMinute}/review', [ManagerMeetingMinuteController::class, 'review'])->name('meeting-minutes.review');
+        Route::get('/attendance', [\App\Http\Controllers\Manager\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 // ─── Client ──────────────────────────────────────────────────────────────────
@@ -103,6 +105,7 @@ Route::middleware(['auth', 'verified', 'role:client'])
         Route::post('/meeting-minutes/{meetingMinute}/submit', [ClientMeetingMinuteController::class, 'submit'])->name('meeting-minutes.submit');
         Route::post('/meeting-minutes/{meetingMinute}/duplicate', [ClientMeetingMinuteController::class, 'duplicate'])->name('meeting-minutes.duplicate');
         Route::delete('/meeting-minutes/attachments/{attachment}', [\App\Http\Controllers\Client\AttachmentController::class, 'destroy'])->name('meeting-minutes.attachments.destroy');
+        Route::get('/attendance', [\App\Http\Controllers\Client\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 require __DIR__.'/auth.php';

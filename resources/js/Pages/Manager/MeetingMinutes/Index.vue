@@ -19,7 +19,7 @@ const tabs = ['pending', 'approved', 'rejected'];
     <Head title="Meeting Minutes" />
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold text-gray-900">Meeting Minutes Review</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Meeting Minutes Review</h2>
         </template>
 
         <div class="py-8">
@@ -39,31 +39,31 @@ const tabs = ['pending', 'approved', 'rejected'];
                 </div>
 
                 <!-- Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="min-w-full divide-y divide-gray-100">
-                        <thead class="bg-gray-50">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Title</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Submitted By</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Meeting Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Action</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Title</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Submitted By</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Meeting Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-50">
-                            <tr v-for="minute in minutes" :key="minute.id" class="hover:bg-gray-50 transition-colors">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
+                            <tr v-for="minute in minutes" :key="minute.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <div class="font-medium text-gray-900">{{ minute.title }}</div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ minute.title }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ minute.creator?.name }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ minute.formatted_meeting_date }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ minute.creator?.name }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ minute.formatted_meeting_date }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(minute.status)">
                                         {{ minute.status }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <Link :href="route('manager.meeting-minutes.show', minute.id)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                    <Link :href="route('manager.meeting-minutes.show', minute.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium">
                                         {{ minute.status === 'pending' ? 'Review' : 'View' }}
                                     </Link>
                                 </td>

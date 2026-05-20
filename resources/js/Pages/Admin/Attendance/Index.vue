@@ -14,12 +14,12 @@ const dateFilter = ref(props.filterDate || '');
 const showAbsentees = ref(false);
 
 const applyFilter = () => {
-    router.get(route('admin.attendance.index'), { date: dateFilter.value }, { preserveState: true });
+    router.get(window.location.pathname, { date: dateFilter.value }, { preserveState: true });
 };
 
 const clearFilter = () => {
     dateFilter.value = '';
-    router.get(route('admin.attendance.index'));
+    router.get(window.location.pathname);
 };
 
 const roleBadge = (role) => ({

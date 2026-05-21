@@ -25,11 +25,11 @@ const tabs = ['pending', 'approved', 'rejected'];
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Tabs -->
-                <div class="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
+                <div class="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit mb-6">
                     <Link v-for="tab in tabs" :key="tab"
                         :href="route('manager.meeting-minutes.index', { status: tab })"
                         class="px-4 py-2 rounded-md text-sm font-medium transition-colors capitalize flex items-center gap-2"
-                        :class="status === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+                        :class="status === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 dark:bg-gray-800 hover:text-gray-900'">
                         {{ tab }}
                         <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
                             :class="status === tab ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600'">

@@ -28,11 +28,11 @@ const submit = () => {
         <div class="py-8">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Minute Detail -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <p class="text-sm text-gray-500">Submitted by <span class="font-medium text-gray-800">{{ minute.creator?.name }}</span></p>
-                            <p class="text-sm text-gray-500">Meeting date: <span class="font-medium text-gray-800">{{ minute.formatted_meeting_date }}</span></p>
+                            <p class="text-sm dark:text-gray-500">Submitted by <span class="font-medium dark:text-gray-100">{{ minute.creator?.name }}</span></p>
+                            <p class="text-sm dark:text-gray-500">Meeting date: <span class="font-medium dark:text-gray-100">{{ minute.formatted_meeting_date }}</span></p>
                         </div>
                         <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
                             :class="{
@@ -44,25 +44,25 @@ const submit = () => {
                         </span>
                     </div>
                     <div class="prose max-w-none">
-                        <div class="bg-gray-50 rounded-lg p-4 text-gray-800 text-sm leading-relaxed" v-html="minute.content"></div>
+                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-gray-800 dark:text-gray-100 text-sm leading-relaxed" v-html="minute.content"></div>
                     </div>
                 </div>
 
                 <!-- Attachments -->
-                <div v-if="minute.attachments && minute.attachments.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div v-if="minute.attachments && minute.attachments.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                         Attachments ({{ minute.attachments.length }})
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div v-for="attachment in minute.attachments" :key="attachment.id" class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-200 transition-colors">
+                        <div v-for="attachment in minute.attachments" :key="attachment.id" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-200 transition-colors">
                             <div class="flex items-center space-x-3 truncate">
                                 <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs flex-shrink-0 uppercase">
                                     {{ attachment.file_type || 'FILE' }}
                                 </div>
                                 <div class="truncate">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ attachment.file_name }}</p>
-                                    <p class="text-xs text-gray-500">{{ attachment.file_size_formatted }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ attachment.file_name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ attachment.file_size_formatted }}</p>
                                 </div>
                             </div>
                             <a :href="`/storage/${attachment.file_path}`" target="_blank" class="flex-shrink-0 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
@@ -74,48 +74,47 @@ const submit = () => {
                 </div>
 
                 <!-- Review History -->
-                <div v-if="minute.reviews?.length" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Review History</h3>
+                <div v-if="minute.reviews?.length" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-4">Review History</h3>
                     <div class="space-y-3">
                         <div v-for="review in minute.reviews" :key="review.id"
                             class="flex gap-3 p-3 rounded-lg"
-                            :class="review.status === 'approved' ? 'bg-green-50' : 'bg-red-50'">
+                            :class="review.status === 'approved' ? 'bg-grey-50 bg-grey-800' : 'bg-grey-50 bg-grey-800'">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                                 :class="review.status === 'approved' ? 'bg-green-500' : 'bg-red-500'">
                                 {{ review.reviewer?.name?.charAt(0) }}
                             </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">{{ review.reviewer?.name }}
-                                    <span class="font-normal capitalize" :class="review.status === 'approved' ? 'text-green-700' : 'text-red-700'">{{ review.status }}</span>
-                                </p>
-                                <p v-if="review.comment" class="text-sm text-gray-600 mt-1">{{ review.comment }}</p>
+                            <div class="justify-end">
+                                <p class="text-sm font-medium dark:text-gray-100">{{ review.reviewer?.name }}</p>
+                                <span class="font-normal capitalize font-bold align-right" :class="review.status === 'approved' ? 'text-green-700 dark:text-green-700' : 'text-red-700 dark:text-red-700'">[ {{ review.status }} ]</span>
+                                <p v-if="review.comment" class="text-sm dark:text-gray-300 mt-1">{{ review.comment }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Review Form (only if pending) -->
-                <div v-if="minute.status === 'pending'" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-semibold text-gray-800 mb-4">Submit Your Review</h3>
+                <div v-if="minute.status === 'pending'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <h3 class="font-semibold dark:text-gray-100 mb-4">Submit Your Review</h3>
                     <form @submit.prevent="submit" class="space-y-4">
                         <div class="flex gap-3">
                             <button type="button" @click="form.status = 'approved'"
                                 class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'approved' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-600 hover:border-green-300'">
+                                :class="form.status === 'approved' ? 'dark:border-green-500 dark:bg-green-50 text-green-700' : 'dark:border-gray-200 dark:text-gray-600 dark:hover:border-green-300'">
                                 ✓ Approve
                             </button>
                             <button type="button" @click="form.status = 'rejected'"
                                 class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'rejected' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-red-300'">
+                                :class="form.status === 'rejected' ? 'dark:border-red-500 dark:bg-red-50 dark:text-red-700' : 'dark:border-gray-200 dark:text-gray-600 dark:hover:border-red-300'">
                                 ✗ Reject
                             </button>
                         </div>
                         <p v-if="form.errors.status" class="text-sm text-red-600">{{ form.errors.status }}</p>
 
                         <div v-if="form.status === 'rejected'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rejection Reason <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium dark:text-gray-100 mb-1">Rejection Reason <span class="dark:text-red-500">*</span></label>
                             <textarea v-model="form.comment" rows="4"
-                                class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm text-gray-600"
                                 placeholder="Explain what needs to be corrected..."></textarea>
                             <p v-if="form.errors.comment" class="text-sm text-red-600 mt-1">{{ form.errors.comment }}</p>
                         </div>
@@ -123,7 +122,7 @@ const submit = () => {
                         <div v-if="form.status" class="flex justify-end">
                             <button type="submit" :disabled="form.processing"
                                 class="px-6 py-2 rounded-lg text-white font-medium text-sm transition-colors"
-                                :class="form.status === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'">
+                                :class="form.status === 'approved' ? 'dark:bg-green-600 dark:hover:bg-green-700' : 'dark:bg-red-600 dark:hover:dark:bg-red-700'">
                                 Submit Review
                             </button>
                         </div>

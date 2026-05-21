@@ -38,8 +38,14 @@ class HandleInertiaRequests extends Middleware
                 ->first();
         }
 
+        $appSettings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        if (!isset($appSettings['app_name'])) {
+            $appSettings['app_name'] = config('app.name');
+        }
+
         return [
             ...parent::share($request),
+            'app_settings' => $appSettings,
             'auth' => [
                 'user' => $request->user() ? [
                     'id'         => $request->user()->id,

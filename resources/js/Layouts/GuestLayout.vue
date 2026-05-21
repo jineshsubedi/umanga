@@ -36,7 +36,7 @@ useTheme();
             
             <!-- Optional Footer / Links below card -->
             <div class="mt-8 text-center text-sm text-gray-300 dark:text-gray-400">
-                &copy; {{ new Date().getFullYear() }} UMNG Portal. Secure Access.
+                &copy; {{ new Date().getFullYear() }} {{ $page.props.app_settings?.app_name || 'UMNG Portal' }}. Secure Access.
             </div>
         </div>
         

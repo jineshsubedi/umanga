@@ -13,7 +13,7 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Welcome to UMNG Portal" />
+    <Head :title="`Welcome to ${$page.props.app_settings?.app_name || 'UMNG Portal'}`" />
 
     <div class="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 font-sans">
         
@@ -23,7 +23,7 @@ defineProps({
                 <div class="flex justify-between h-20 items-center">
                     <div class="flex-shrink-0 flex items-center gap-3">
                         <ApplicationLogo class="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
-                        <span class="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">UMNG Portal</span>
+                        <span class="font-bold text-2xl tracking-tight text-gray-900 dark:text-white">{{ $page.props.app_settings?.app_name || 'UMNG Portal' }}</span>
                     </div>
                     <div class="flex items-center space-x-4">
                         <template v-if="$page.props.auth.user">
@@ -146,7 +146,7 @@ defineProps({
                 <div class="mt-8 md:mt-0 md:order-1 flex items-center justify-center md:justify-start gap-2">
                     <ApplicationLogo class="w-6 h-6 text-gray-400" />
                     <p class="text-base text-gray-400">
-                        &copy; {{ new Date().getFullYear() }} UMNG Portal. All rights reserved.
+                        &copy; {{ new Date().getFullYear() }} {{ $page.props.app_settings?.app_name || 'UMNG Portal' }}. All rights reserved.
                     </p>
                 </div>
             </div>

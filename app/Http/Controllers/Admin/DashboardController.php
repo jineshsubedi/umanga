@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\MeetingMinute;
+use App\Models\MeetingMemo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,11 +17,11 @@ class DashboardController extends Controller
         // Statistics
         $totalUsers = User::where('company_id', $companyId)->where('role', '!=', 'super_admin')->count();
         $totalManagers = User::where('company_id', $companyId)->where('role', 'manager')->count();
-        $totalClients = User::where('company_id', $companyId)->where('role', 'client')->count();
+        $totalStaffs = User::where('company_id', $companyId)->where('role', 'staff')->count();
         
-        $totalMinutes = MeetingMinute::where('company_id', $companyId)->count();
-        $pendingMinutes = MeetingMinute::where('company_id', $companyId)->where('status', 'pending')->count();
-        $approvedMinutes = MeetingMinute::where('company_id', $companyId)->where('status', 'approved')->count();
+        $totalMemos = MeetingMemo::where('company_id', $companyId)->count();
+        $pendingMemos = MeetingMemo::where('company_id', $companyId)->where('status', 'pending')->count();
+        $approvedMemos = MeetingMemo::where('company_id', $companyId)->where('status', 'approved')->count();
 
         // Recent Activity
         $recentUsers = User::where('company_id', $companyId)
@@ -30,7 +30,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['id', 'name', 'email', 'role', 'created_at']);
 
-        $recentMinutes = MeetingMinute::with('creator:id,name')
+        $recentMemos = MeetingMemo::with('creator:id,name')
             ->where('company_id', $companyId)
             ->latest()
             ->take(5)
@@ -41,16 +41,16 @@ class DashboardController extends Controller
                 'users' => [
                     'total' => $totalUsers,
                     'managers' => $totalManagers,
-                    'clients' => $totalClients,
+                    'staffs' => $totalStaffs,
                 ],
-                'minutes' => [
-                    'total' => $totalMinutes,
-                    'pending' => $pendingMinutes,
-                    'approved' => $approvedMinutes,
+                'memos' => [
+                    'total' => $totalMemos,
+                    'pending' => $pendingMemos,
+                    'approved' => $approvedMemos,
                 ],
             ],
             'recentUsers' => $recentUsers,
-            'recentMinutes' => $recentMinutes,
+            'recentMemos' => $recentMemos,
             'company' => auth()->user()->company,
         ]);
     }

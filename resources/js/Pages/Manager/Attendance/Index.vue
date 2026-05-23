@@ -7,7 +7,7 @@ import 'v-calendar/style.css';
 
 const props = defineProps({
     attendances: Array,
-    meetingMinutes: Array,
+    meetingMemos: Array,
 });
 
 const isDark = ref(false);
@@ -24,7 +24,7 @@ onMounted(() => {
 
 const formatTime = (time) => {
     if (!time) return 'N/A';
-    return new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(time).toLocaleTimeString([], { hour: '2-digit', memo: '2-digit' });
 };
 
 const toDateStr = (d) => {
@@ -47,8 +47,8 @@ const selectedAttendance = computed(() =>
     props.attendances.find(a => toDateStr(a.date) === selectedDateStr.value) || null
 );
 
-const selectedMinutes = computed(() =>
-    (props.meetingMinutes || []).filter(m => toDateStr(m.meeting_date) === selectedDateStr.value)
+const selectedMemos = computed(() =>
+    (props.meetingMemos || []).filter(m => toDateStr(m.meeting_date) === selectedDateStr.value)
 );
 
 const attributes = computed(() => {
@@ -62,14 +62,14 @@ const attributes = computed(() => {
         });
     });
 
-    (props.meetingMinutes || []).forEach(minute => {
+    (props.meetingMemos || []).forEach(memo => {
         let color = 'gray';
-        if (minute.status === 'approved') color = 'blue';
-        if (minute.status === 'rejected') color = 'red';
-        if (minute.status === 'pending') color = 'yellow';
+        if (memo.status === 'approved') color = 'blue';
+        if (memo.status === 'rejected') color = 'red';
+        if (memo.status === 'pending') color = 'yellow';
         attrs.push({
-            key: `minute-${minute.id}`,
-            dates: minute.meeting_date,
+            key: `memo-${memo.id}`,
+            dates: memo.meeting_date,
             dot: { color },
         });
     });
@@ -190,29 +190,29 @@ const isToday = computed(() => {
                                     </div>
                                 </div>
 
-                                <!-- Assigned Meeting Minutes -->
+                                <!-- Assigned  Memos -->
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        Assigned Meeting Minutes
-                                        <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">{{ selectedMinutes.length }}</span>
+                                        Assigned  Memos
+                                        <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">{{ selectedMemos.length }}</span>
                                     </h4>
-                                    <div v-if="selectedMinutes.length > 0" class="space-y-3">
-                                        <div v-for="minute in selectedMinutes" :key="minute.id"
+                                    <div v-if="selectedMemos.length > 0" class="space-y-3">
+                                        <div v-for="memo in selectedMemos" :key="memo.id"
                                             class="flex items-center justify-between p-4 rounded-xl border transition-colors"
                                             :class="{
-                                                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800': minute.status === 'approved',
-                                                'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': minute.status === 'rejected',
-                                                'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800': minute.status === 'pending',
+                                                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800': memo.status === 'approved',
+                                                'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': memo.status === 'rejected',
+                                                'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800': memo.status === 'pending',
                                             }">
-                                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ minute.title }}</p>
-                                            <span class="ml-3 flex-shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(minute.status)">
-                                                {{ minute.status }}
+                                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ memo.title }}</p>
+                                            <span class="ml-3 flex-shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(memo.status)">
+                                                {{ memo.status }}
                                             </span>
                                         </div>
                                     </div>
                                     <div v-else class="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">No meeting minutes assigned for this day.</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">No meeting memos assigned for this day.</span>
                                     </div>
                                 </div>
                             </div>

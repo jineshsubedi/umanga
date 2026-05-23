@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
-use App\Models\MeetingMinuteAttachment;
+use App\Models\MeetingMemoAttachment;
 use Illuminate\Support\Facades\Storage;
 
 class AttachmentController extends Controller
 {
-    public function destroy(MeetingMinuteAttachment $attachment)
+    public function destroy(MeetingMemoAttachment $attachment)
     {
-        $minute = $attachment->meetingMinute;
-        abort_if($minute->created_by !== auth()->id(), 403);
-        abort_if($minute->status !== 'draft', 422, 'Cannot delete attachment from a submitted minute.');
+        $memo = $attachment->meetingMemo;
+        abort_if($memo->created_by !== auth()->id(), 403);
+        abort_if($memo->status !== 'draft', 422, 'Cannot delete attachment from a submitted memo.');
 
         if (Storage::disk('public')->exists($attachment->file_path)) {
             Storage::disk('public')->delete($attachment->file_path);

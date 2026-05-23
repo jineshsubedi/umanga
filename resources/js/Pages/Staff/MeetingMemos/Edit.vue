@@ -8,13 +8,13 @@ import RichTextEditor from '@/Components/RichTextEditor.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
-const props = defineProps({ minute: Object, managers: Array });
+const props = defineProps({ memo: Object, managers: Array });
 
 const form = useForm({
-    title: props.minute.title,
-    content: props.minute.content,
-    meeting_date: props.minute.meeting_date ? new Date(props.minute.meeting_date).toISOString().slice(0, 16) : '',
-    manager_ids: props.minute.managers?.map(m => m.id) || [],
+    title: props.memo.title,
+    content: props.memo.content,
+    meeting_date: props.memo.meeting_date ? new Date(props.memo.meeting_date).toISOString().slice(0, 16) : '',
+    manager_ids: props.memo.managers?.map(m => m.id) || [],
     attachments: [],
     _method: 'put',
 });
@@ -57,13 +57,13 @@ const removeNewFile = (index) => {
 
 const deleteExistingAttachment = (attachment) => {
     if (confirm(`Remove ${attachment.file_name}?`)) {
-        router.delete(route('client.meeting-minutes.attachments.destroy', attachment.id), {
+        router.delete(route('staff.meeting-memos.attachments.destroy', attachment.id), {
             preserveScroll: true,
         });
     }
 };
 
-const submit = () => form.post(route('client.meeting-minutes.update', props.minute.id), {
+const submit = () => form.post(route('staff.meeting-memos.update', props.memo.id), {
     forceFormData: true,
     preserveScroll: true,
     onSuccess: () => {
@@ -74,40 +74,40 @@ const submit = () => form.post(route('client.meeting-minutes.update', props.minu
 </script>
 
 <template>
-    <Head title="Edit Meeting Minute" />
+    <Head title="Edit Memo" />
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
-                <Link :href="route('client.meeting-minutes.index')" class="text-gray-400 hover:text-gray-600">
+                <Link :href="route('staff.meeting-memos.index')" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </Link>
-                <h2 class="text-xl font-semibold text-gray-900">Edit Meeting Minute</h2>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">Edit Memo</h2>
             </div>
         </template>
 
         <div class="py-8">
             <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Rejection Notice -->
-                <div v-if="minute.status === 'rejected' && minute.latest_review?.comment"
+                <div v-if="memo.status === 'rejected' && memo.latest_review?.comment"
                     class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
                     <p class="text-sm font-semibold text-red-700">Rejected — Manager's feedback:</p>
-                    <p class="text-sm text-red-600 mt-1">{{ minute.latest_review.comment }}</p>
+                    <p class="text-sm text-red-600 mt-1">{{ memo.latest_review.comment }}</p>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
                     <form @submit.prevent="submit" class="space-y-5">
                         <div>
                             <InputLabel for="title" value="Title" />
-                            <TextInput id="title" type="text" class="mt-1 block w-full" v-model="form.title" required autofocus />
+                            <TextInput id="title" type="text" class="mt-1 block w-full dark:text-gray-400" v-model="form.title" required autofocus />
                             <InputError class="mt-2" :message="form.errors.title" />
                         </div>
                         <div>
-                            <InputLabel for="meeting_date" value="Meeting Date" />
-                            <TextInput id="meeting_date" type="datetime-local" class="mt-1 block w-full" v-model="form.meeting_date" required />
+                            <InputLabel for="meeting_date" value=" Date" />
+                            <TextInput id="meeting_date" type="datetime-local" class="mt-1 block w-full dark:text-gray-400" v-model="form.meeting_date" required />
                             <InputError class="mt-2" :message="form.errors.meeting_date" />
                         </div>
                         <div>
-                            <InputLabel for="content" value="Meeting Content / Minutes" />
+                            <InputLabel for="content" value=" Content / Memos" />
                             <div class="mt-1">
                                 <RichTextEditor v-model="form.content" />
                             </div>
@@ -166,10 +166,10 @@ const submit = () => form.post(route('client.meeting-minutes.update', props.minu
                         </div>
 
                         <!-- Existing Attachments -->
-                        <div v-if="minute.attachments && minute.attachments.length > 0">
+                        <div v-if="memo.attachments && memo.attachments.length > 0">
                             <InputLabel value="Existing Attachments" />
                             <div class="mt-2 grid grid-cols-1 gap-2">
-                                <div v-for="attachment in minute.attachments" :key="attachment.id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div v-for="attachment in memo.attachments" :key="attachment.id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                                     <div class="flex items-center space-x-3 truncate">
                                         <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                         <a :href="`/storage/${attachment.file_path}`" target="_blank" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 truncate">{{ attachment.file_name }}</a>
@@ -213,7 +213,7 @@ const submit = () => form.post(route('client.meeting-minutes.update', props.minu
                         </div>
 
                         <div class="flex items-center justify-between pt-2">
-                            <Link :href="route('client.meeting-minutes.index')" class="text-sm text-gray-600 hover:text-gray-900">Cancel</Link>
+                            <Link :href="route('staff.meeting-memos.index')" class="text-sm text-gray-600 hover:text-gray-900">Cancel</Link>
                             <PrimaryButton :disabled="form.processing">Save Changes</PrimaryButton>
                         </div>
                     </form>

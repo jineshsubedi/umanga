@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Company;
 use App\Models\User;
-use App\Models\MeetingMinute;
-use App\Models\MeetingMinuteReview;
+use App\Models\MeetingMemo;
+use App\Models\MeetingMemoReview;
 use Illuminate\Support\Facades\Hash;
 
 class CompanySeeder extends Seeder
@@ -52,32 +52,32 @@ class CompanySeeder extends Seeder
                 ]);
             }
 
-            // Create Clients
-            $clients = [];
+            // Create Staffs
+            $staffs = [];
             for ($k = 1; $k <= 5; $k++) {
-                $clients[] = User::create([
+                $staffs[] = User::create([
                     'company_id' => $company->id,
-                    'name' => "Company $i Client $k",
-                    'email' => "client$k@company$i.com",
+                    'name' => "Company $i Staff $k",
+                    'email' => "staff$k@company$i.com",
                     'password' => $password,
-                    'role' => 'client',
+                    'role' => 'staff',
                     'status' => 'active',
                     'email_verified_at' => now(),
                 ]);
             }
 
-            // Create Meeting Minutes
+            // Create  Memos
             $statuses = ['draft', 'pending', 'approved', 'rejected'];
-            foreach ($clients as $client) {
-                // Each client creates 3 meeting minutes
+            foreach ($staffs as $staff) {
+                // Each staff creates 3 meeting memos
                 for ($m = 1; $m <= 3; $m++) {
                     $status = $statuses[array_rand($statuses)];
                     
-                    $minute = MeetingMinute::create([
+                    $memo = MeetingMemo::create([
                         'company_id' => $company->id,
-                        'created_by' => $client->id,
-                        'title' => "Meeting Minute $m by {$client->name}",
-                        'content' => "<p>This is the detailed content for meeting minute $m.</p><ul><li>Discussed project roadmap</li><li>Assigned tasks to team members</li><li>Set next meeting date</li></ul>",
+                        'created_by' => $staff->id,
+                        'title' => "Memo $m by {$staff->name}",
+                        'content' => "<p>This is the detailed content for meeting memo $m.</p><ul><li>Discussed project roadmap</li><li>Assigned tasks to team members</li><li>Set next meeting date</li></ul>",
                         'meeting_date' => now()->subDays(rand(1, 30)),
                         'status' => $status,
                     ]);
@@ -85,11 +85,11 @@ class CompanySeeder extends Seeder
                     // Add a review if it's approved or rejected
                     if ($status === 'approved' || $status === 'rejected') {
                         $manager = $managers[array_rand($managers)];
-                        MeetingMinuteReview::create([
-                            'meeting_minute_id' => $minute->id,
+                        MeetingMemoReview::create([
+                            'meeting_memo_id' => $memo->id,
                             'reviewed_by' => $manager->id,
                             'status' => $status,
-                            'comment' => "This minute has been $status by {$manager->name}.",
+                            'comment' => "This memo has been $status by {$manager->name}.",
                         ]);
                     }
                 }

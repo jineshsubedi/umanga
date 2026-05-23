@@ -58,7 +58,7 @@ defineProps({
                     Elevate Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Corporate Governance</span>
                 </h1>
                 <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-700 dark:text-gray-300 mb-10">
-                    A centralized, multi-tenant platform for managing meeting minutes, streamlining approvals, and fostering organizational transparency.
+                    A centralized, multi-tenant platform for managing meeting memos, streamlining approvals, and fostering organizational transparency.
                 </p>
                 <div class="flex justify-center gap-4">
                     <Link :href="route('register')" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5">
@@ -93,7 +93,7 @@ defineProps({
                         </div>
                         <h3 class="mt-8 text-xl font-bold text-gray-900 dark:text-white">Role-Based Access</h3>
                         <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Granular control over who can create, review, and approve meeting minutes. Secure workspaces for Super Admins, Company Admins, Managers, and Clients.
+                            Granular control over who can create, review, and approve meeting memos. Secure workspaces for Super Admins, Company Admins, Managers, and Staffs.
                         </p>
                     </div>
 
@@ -108,7 +108,7 @@ defineProps({
                         </div>
                         <h3 class="mt-8 text-xl font-bold text-gray-900 dark:text-white">Approval Workflows</h3>
                         <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Clients submit minutes, Managers review and approve or reject with detailed comments. A seamless, transparent workflow that maintains a clear audit trail.
+                            Staffs submit memos, Managers review and approve or reject with detailed comments. A seamless, transparent workflow that maintains a clear audit trail.
                         </p>
                     </div>
 
@@ -123,7 +123,7 @@ defineProps({
                         </div>
                         <h3 class="mt-8 text-xl font-bold text-gray-900 dark:text-white">Real-Time Notifications</h3>
                         <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Stay informed instantly. Receive alerts when new minutes are submitted, approved, or require your attention. Never miss a critical update again.
+                            Stay informed instantly. Receive alerts when new memos are submitted, approved, or require your attention. Never miss a critical update again.
                         </p>
                     </div>
                 </div>

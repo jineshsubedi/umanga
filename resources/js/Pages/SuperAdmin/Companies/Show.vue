@@ -7,7 +7,7 @@ const props = defineProps({ company: Object, stats: Object });
 const roleBadge = (role) => ({
     admin:   'bg-blue-100 text-blue-700',
     manager: 'bg-green-100 text-green-700',
-    client:  'bg-orange-100 text-orange-700',
+    staff:  'bg-orange-100 text-orange-700',
 }[role] ?? 'bg-gray-100 text-gray-700');
 </script>
 
@@ -51,7 +51,7 @@ const roleBadge = (role) => ({
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Minutes</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Memos</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
                             </tr>
                         </thead>
@@ -63,8 +63,8 @@ const roleBadge = (role) => ({
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" :class="roleBadge(user.role)">{{ user.role }}</span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span v-if="user.role === 'client'" class="text-sm font-medium text-gray-600">
-                                        {{ user.meeting_minutes_count }}
+                                    <span v-if="user.role === 'staff'" class="text-sm font-medium text-gray-600">
+                                        {{ user.meeting_memos_count }}
                                     </span>
                                     <span v-else class="text-sm text-gray-400">-</span>
                                 </td>

@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MeetingMinuteReview extends Model
+class MeetingMemoReview extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'meeting_minute_id', 'reviewed_by', 'status', 'comment',
+        'meeting_memo_id', 'reviewed_by', 'status', 'comment',
     ];
 
-    public function meetingMinute()
+    public function meetingMemo()
     {
-        return $this->belongsTo(MeetingMinute::class);
+        return $this->belongsTo(MeetingMemo::class);
     }
 
     public function reviewer()

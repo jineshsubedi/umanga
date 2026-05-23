@@ -67,7 +67,7 @@ const submit = () => form.put(route('admin.users.update', props.user.id));
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                             >
                                 <option value="manager">Manager</option>
-                                <option value="client">Client</option>
+                                <option value="staff">Staff</option>
                             </select>
                             <InputError class="mt-2" :message="form.errors.role" />
                         </div>

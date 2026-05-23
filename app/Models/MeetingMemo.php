@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MeetingMinute extends Model
+class MeetingMemo extends Model
 {
     use HasFactory;
 
@@ -31,12 +31,12 @@ class MeetingMinute extends Model
 
     public function reviews()
     {
-        return $this->hasMany(MeetingMinuteReview::class);
+        return $this->hasMany(MeetingMemoReview::class);
     }
 
     public function latestReview()
     {
-        return $this->hasOne(MeetingMinuteReview::class)->latestOfMany();
+        return $this->hasOne(MeetingMemoReview::class)->latestOfMany();
     }
 
     public function getFormattedMeetingDateAttribute()
@@ -46,11 +46,11 @@ class MeetingMinute extends Model
 
     public function attachments()
     {
-        return $this->hasMany(MeetingMinuteAttachment::class);
+        return $this->hasMany(MeetingMemoAttachment::class);
     }
 
     public function managers()
     {
-        return $this->belongsToMany(User::class, 'meeting_minute_managers', 'meeting_minute_id', 'manager_id');
+        return $this->belongsToMany(User::class, 'meeting_memo_managers', 'meeting_memo_id', 'manager_id');
     }
 }

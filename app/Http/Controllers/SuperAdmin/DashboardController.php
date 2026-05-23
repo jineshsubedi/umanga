@@ -5,7 +5,7 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\User;
-use App\Models\MeetingMinute;
+use App\Models\MeetingMemo;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -24,20 +24,20 @@ class DashboardController extends Controller
             'active_users'       => User::where('status', 'active')->where('role', '!=', 'super_admin')->count(),
             'admins_count'       => User::where('role', 'admin')->where('status', 'active')->count(),
             'managers_count'     => User::where('role', 'manager')->where('status', 'active')->count(),
-            'clients_count'      => User::where('role', 'client')->where('status', 'active')->count(),
-            'total_minutes'      => MeetingMinute::count(),
+            'staffs_count'      => User::where('role', 'staff')->where('status', 'active')->count(),
+            'total_memos'      => MeetingMemo::count(),
             'present_today'      => \App\Models\Attendance::whereDate('date', Carbon::today())->count(),
             'clocked_in_now'     => \App\Models\Attendance::whereDate('date', Carbon::today())->whereNotNull('clock_in')->whereNull('clock_out')->count(),
             'completed_today'    => \App\Models\Attendance::whereDate('date', Carbon::today())->whereNotNull('clock_out')->count(),
         ];
 
-        // Graph Data: Minutes created per month over the last 6 months
+        // Graph Data: Memos created per month over the last 6 months
         $months = [];
-        $minutesData = [];
+        $memosData = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
             $months[] = $date->format('M');
-            $minutesData[] = MeetingMinute::whereMonth('created_at', $date->month)
+            $memosData[] = MeetingMemo::whereMonth('created_at', $date->month)
                                           ->whereYear('created_at', $date->year)
                                           ->count();
         }
@@ -51,7 +51,7 @@ class DashboardController extends Controller
                                       ->count();
         }
 
-        // Filters for Daily Minutes Chart
+        // Filters for Daily Memos Chart
         $selectedYear = $request->input('year', Carbon::now()->year);
         $selectedMonth = $request->input('month', Carbon::now()->month);
 
@@ -65,16 +65,16 @@ class DashboardController extends Controller
 
         for ($d = 1; $d <= $daysInMonth; $d++) {
             $daysLabels[] = $d;
-            $dayCreated[] = MeetingMinute::whereYear('created_at', $selectedYear)
+            $dayCreated[] = MeetingMemo::whereYear('created_at', $selectedYear)
                                          ->whereMonth('created_at', $selectedMonth)
                                          ->whereDay('created_at', $d)
                                          ->count();
-            $dayApproved[] = MeetingMinute::whereYear('created_at', $selectedYear)
+            $dayApproved[] = MeetingMemo::whereYear('created_at', $selectedYear)
                                           ->whereMonth('created_at', $selectedMonth)
                                           ->whereDay('created_at', $d)
                                           ->where('status', 'approved')
                                           ->count();
-            $dayRejected[] = MeetingMinute::whereYear('created_at', $selectedYear)
+            $dayRejected[] = MeetingMemo::whereYear('created_at', $selectedYear)
                                           ->whereMonth('created_at', $selectedMonth)
                                           ->whereDay('created_at', $d)
                                           ->where('status', 'rejected')
@@ -83,9 +83,9 @@ class DashboardController extends Controller
 
         $chartData = [
             'labels' => $months,
-            'minutes' => $minutesData,
+            'memos' => $memosData,
             'companies' => $companiesData,
-            'max_y' => max(10, max($minutesData) + 5, max($companiesData) + 5),
+            'max_y' => max(10, max($memosData) + 5, max($companiesData) + 5),
             'days_labels' => $daysLabels,
             'day_created' => $dayCreated,
             'day_approved' => $dayApproved,
@@ -93,7 +93,7 @@ class DashboardController extends Controller
             'max_status_y' => max(5, max($dayCreated) + 2),
         ];
 
-        $earliestYear = MeetingMinute::min(DB::raw('YEAR(created_at)')) ?? Carbon::now()->year;
+        $earliestYear = MeetingMemo::min(DB::raw('YEAR(created_at)')) ?? Carbon::now()->year;
         $availableYears = range($earliestYear, Carbon::now()->year + 1);
 
         return Inertia::render('SuperAdmin/Dashboard', [

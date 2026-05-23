@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Client;
+namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
@@ -15,13 +15,13 @@ class AttendanceController extends Controller
         $user = auth()->user();
         
         $attendances = Attendance::where('user_id', $user->id)->get();
-        $meetingMinutes = \App\Models\MeetingMinute::where('created_by', $user->id)
+        $meetingMemos = \App\Models\MeetingMemo::where('created_by', $user->id)
             ->select('id', 'title', 'meeting_date', 'status')
             ->get();
             
-        return Inertia::render('Client/Attendance/Index', [
+        return Inertia::render('Staff/Attendance/Index', [
             'attendances' => $attendances,
-            'meetingMinutes' => $meetingMinutes,
+            'meetingMemos' => $meetingMemos,
         ]);
     }
 }

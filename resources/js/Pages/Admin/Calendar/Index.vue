@@ -7,8 +7,8 @@ import 'v-calendar/style.css';
 
 const props = defineProps({
     attendances: Array,   // [{ date, role, count }]
-    minutes: Array,       // [{ date, count }]
-    totalUsersByRole: Object, // { manager: { count }, client: { count }, admin: { count } }
+    memos: Array,       // [{ date, count }]
+    totalUsersByRole: Object, // { manager: { count }, staff: { count }, admin: { count } }
 });
 
 const isDark = ref(false);
@@ -39,11 +39,11 @@ const selectedDateStr = computed(() => {
     return toDateStr(selectedDate.value);
 });
 
-// Active dates = union of attendance and minutes dates
+// Active dates = union of attendance and memos dates
 const activeDates = computed(() => {
     const dates = new Set();
     props.attendances.forEach(a => dates.add(a.date));
-    props.minutes.forEach(m => dates.add(m.date));
+    props.memos.forEach(m => dates.add(m.date));
     return [...dates];
 });
 
@@ -56,13 +56,13 @@ const selectedAttendanceByRole = computed(() => {
     return map;
 });
 
-// Minutes count for selected date
-const selectedMinutesCount = computed(() =>
-    props.minutes.find(m => toDateStr(m.date) === selectedDateStr.value)?.count ?? 0
+// Memos count for selected date
+const selectedMemosCount = computed(() =>
+    props.memos.find(m => toDateStr(m.date) === selectedDateStr.value)?.count ?? 0
 );
 
 // Compute present/absent per role for selected date
-const roles = ['manager', 'client', 'admin'];
+const roles = ['manager', 'staff', 'admin'];
 const roleInfo = computed(() =>
     roles.map(r => {
         const total = props.totalUsersByRole?.[r]?.count ?? 0;
@@ -76,18 +76,18 @@ const attributes = computed(() => {
     const dateMap = {};
 
     props.attendances.forEach(a => {
-        if (!dateMap[a.date]) dateMap[a.date] = { hasAttendance: false, hasMinutes: false };
+        if (!dateMap[a.date]) dateMap[a.date] = { hasAttendance: false, hasMemos: false };
         dateMap[a.date].hasAttendance = true;
     });
-    props.minutes.forEach(m => {
-        if (!dateMap[m.date]) dateMap[m.date] = { hasAttendance: false, hasMinutes: false };
-        dateMap[m.date].hasMinutes = true;
+    props.memos.forEach(m => {
+        if (!dateMap[m.date]) dateMap[m.date] = { hasAttendance: false, hasMemos: false };
+        dateMap[m.date].hasMemos = true;
     });
 
     const attrs = Object.entries(dateMap).map(([date, info]) => ({
         key: `day-${date}`,
         dates: date,
-        dot: info.hasAttendance && info.hasMinutes
+        dot: info.hasAttendance && info.hasMemos
             ? [{ color: 'green' }, { color: 'indigo' }]
             : info.hasAttendance
                 ? { color: 'green' }
@@ -121,15 +121,15 @@ const isToday = computed(() => {
     return toDateStr(selectedDate.value) === toDateStr(today);
 });
 
-const roleLabel = { manager: 'Managers', client: 'Clients', admin: 'Admins' };
+const roleLabel = { manager: 'Managers', staff: 'Staffs', admin: 'Admins' };
 const roleColor = {
     manager: 'text-blue-600 dark:text-blue-400',
-    client: 'text-purple-600 dark:text-purple-400',
+    staff: 'text-purple-600 dark:text-purple-400',
     admin: 'text-indigo-600 dark:text-indigo-400',
 };
 const roleBg = {
     manager: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-    client: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
+    staff: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
     admin: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800',
 };
 </script>
@@ -161,7 +161,7 @@ const roleBg = {
                                     <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span> Attendance Recorded
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Meeting Minutes
+                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-500"></span>  Memos
                                 </div>
                             </div>
                         </div>
@@ -184,15 +184,15 @@ const roleBg = {
 
                             <div class="p-6 space-y-6">
 
-                                <!-- Meeting Minutes Summary -->
+                                <!--  Memos Summary -->
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                        Meeting Minutes
+                                         Memos
                                     </h4>
                                     <div class="flex items-center gap-5 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl">
                                         <div class="flex-1 text-center">
-                                            <p class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300">{{ selectedMinutesCount }}</p>
+                                            <p class="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300">{{ selectedMemosCount }}</p>
                                             <p class="text-xs text-indigo-500 dark:text-indigo-400 mt-1">Total Scheduled</p>
                                         </div>
                                     </div>

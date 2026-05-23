@@ -14,7 +14,7 @@ class UserController extends Controller
     {
         $query = User::with('company:id,name')
             ->where('role', '!=', 'super_admin')
-            ->withCount('meetingMinutes')
+            ->withCount('meetingMemos')
             ->latest();
 
         if ($request->filled('company_id')) {

@@ -16,9 +16,9 @@ class Company extends Model
         return $this->hasMany(User::class);
     }
 
-    public function meetingMinutes()
+    public function meetingMemos()
     {
-        return $this->hasMany(MeetingMinute::class);
+        return $this->hasMany(MeetingMemo::class);
     }
 
     public function isActive(): bool

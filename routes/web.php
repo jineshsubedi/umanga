@@ -6,8 +6,8 @@ use App\Http\Controllers\SuperAdmin\CompanyController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Manager\MeetingMinuteController as ManagerMeetingMinuteController;
-use App\Http\Controllers\Client\MeetingMinuteController as ClientMeetingMinuteController;
+use App\Http\Controllers\Manager\MeetingMemoController as ManagerMeetingMemoController;
+use App\Http\Controllers\Staff\MeetingMemoController as StaffMeetingMemoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -75,8 +75,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::get('/meeting-minutes', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
-        Route::get('/meeting-minutes/{meetingMinute}', [\App\Http\Controllers\Admin\MeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
+        Route::get('/meeting-memos', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'index'])->name('meeting-memos.index');
+        Route::get('/meeting-memos/{meetingMemo}', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'show'])->name('meeting-memos.show');
         Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
     });
@@ -86,28 +86,28 @@ Route::middleware(['auth', 'verified', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
-        Route::get('/meeting-minutes', [ManagerMeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
-        Route::get('/meeting-minutes/{meetingMinute}', [ManagerMeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
-        Route::post('/meeting-minutes/{meetingMinute}/review', [ManagerMeetingMinuteController::class, 'review'])->name('meeting-minutes.review');
+        Route::get('/meeting-memos', [ManagerMeetingMemoController::class, 'index'])->name('meeting-memos.index');
+        Route::get('/meeting-memos/{meetingMemo}', [ManagerMeetingMemoController::class, 'show'])->name('meeting-memos.show');
+        Route::post('/meeting-memos/{meetingMemo}/review', [ManagerMeetingMemoController::class, 'review'])->name('meeting-memos.review');
         Route::get('/attendance', [\App\Http\Controllers\Manager\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
-// ─── Client ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:client'])
-    ->prefix('client')
-    ->name('client.')
+// ─── Staff ──────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'role:staff'])
+    ->prefix('staff')
+    ->name('staff.')
     ->group(function () {
-        Route::get('/meeting-minutes', [ClientMeetingMinuteController::class, 'index'])->name('meeting-minutes.index');
-        Route::get('/meeting-minutes/create', [ClientMeetingMinuteController::class, 'create'])->name('meeting-minutes.create');
-        Route::post('/meeting-minutes', [ClientMeetingMinuteController::class, 'store'])->name('meeting-minutes.store');
-        Route::get('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'show'])->name('meeting-minutes.show');
-        Route::get('/meeting-minutes/{meetingMinute}/edit', [ClientMeetingMinuteController::class, 'edit'])->name('meeting-minutes.edit');
-        Route::match(['put', 'post'], '/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'update'])->name('meeting-minutes.update');
-        Route::delete('/meeting-minutes/{meetingMinute}', [ClientMeetingMinuteController::class, 'destroy'])->name('meeting-minutes.destroy');
-        Route::post('/meeting-minutes/{meetingMinute}/submit', [ClientMeetingMinuteController::class, 'submit'])->name('meeting-minutes.submit');
-        Route::post('/meeting-minutes/{meetingMinute}/duplicate', [ClientMeetingMinuteController::class, 'duplicate'])->name('meeting-minutes.duplicate');
-        Route::delete('/meeting-minutes/attachments/{attachment}', [\App\Http\Controllers\Client\AttachmentController::class, 'destroy'])->name('meeting-minutes.attachments.destroy');
-        Route::get('/attendance', [\App\Http\Controllers\Client\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/meeting-memos', [StaffMeetingMemoController::class, 'index'])->name('meeting-memos.index');
+        Route::get('/meeting-memos/create', [StaffMeetingMemoController::class, 'create'])->name('meeting-memos.create');
+        Route::post('/meeting-memos', [StaffMeetingMemoController::class, 'store'])->name('meeting-memos.store');
+        Route::get('/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'show'])->name('meeting-memos.show');
+        Route::get('/meeting-memos/{meetingMemo}/edit', [StaffMeetingMemoController::class, 'edit'])->name('meeting-memos.edit');
+        Route::match(['put', 'post'], '/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'update'])->name('meeting-memos.update');
+        Route::delete('/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'destroy'])->name('meeting-memos.destroy');
+        Route::post('/meeting-memos/{meetingMemo}/submit', [StaffMeetingMemoController::class, 'submit'])->name('meeting-memos.submit');
+        Route::post('/meeting-memos/{meetingMemo}/duplicate', [StaffMeetingMemoController::class, 'duplicate'])->name('meeting-memos.duplicate');
+        Route::delete('/meeting-memos/attachments/{attachment}', [\App\Http\Controllers\Staff\AttachmentController::class, 'destroy'])->name('meeting-memos.attachments.destroy');
+        Route::get('/attendance', [\App\Http\Controllers\Staff\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 require __DIR__.'/auth.php';

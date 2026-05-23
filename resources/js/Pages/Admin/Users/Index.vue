@@ -7,7 +7,7 @@ const props = defineProps({ users: Array });
 const roleBadge = (role) => ({
     admin:   'bg-blue-100 text-blue-700',
     manager: 'bg-green-100 text-green-700',
-    client:  'bg-orange-100 text-orange-700',
+    staff:  'bg-orange-100 text-orange-700',
 }[role] ?? 'bg-gray-100 text-gray-700');
 
 const toggleStatus = (user) => {
@@ -39,8 +39,8 @@ const toggleStatus = (user) => {
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Managers</p>
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-center">
-                        <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ users.filter(u=>u.role==='client').length }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Clients</p>
+                        <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ users.filter(u=>u.role==='staff').length }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Staffs</p>
                     </div>
                 </div>
                 <Link :href="route('admin.users.create')"
@@ -55,7 +55,7 @@ const toggleStatus = (user) => {
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Minutes</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Memos</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                             </tr>
@@ -69,14 +69,14 @@ const toggleStatus = (user) => {
                                         :class="{
                                             'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
                                             'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': user.role === 'manager',
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'client'
+                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'staff'
                                         }">
                                         {{ user.role }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span v-if="user.role === 'client'" class="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                        {{ user.meeting_minutes_count }}
+                                    <span v-if="user.role === 'staff'" class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                        {{ user.meeting_memos_count }}
                                     </span>
                                     <span v-else class="text-gray-400 dark:text-gray-600 text-sm">-</span>
                                 </td>

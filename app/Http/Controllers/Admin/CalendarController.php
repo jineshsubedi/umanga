@@ -21,8 +21,8 @@ class CalendarController extends Controller
             ->groupBy('attendances.date', 'users.role')
             ->get();
 
-        // Get minutes grouped by date (exclude draft)
-        $minutes = DB::table('meeting_minutes')
+        // Get memos grouped by date (exclude draft)
+        $memos = DB::table('meeting_memos')
             ->where('company_id', $companyId)
             ->where('status', '!=', 'draft')
             ->selectRaw('DATE(meeting_date) as date, count(*) as count')
@@ -39,7 +39,7 @@ class CalendarController extends Controller
 
         return Inertia::render('Admin/Calendar/Index', [
             'attendances' => $attendances,
-            'minutes' => $minutes,
+            'memos' => $memos,
             'totalUsersByRole' => $totalUsersByRole,
         ]);
     }

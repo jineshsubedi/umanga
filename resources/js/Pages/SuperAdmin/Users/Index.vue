@@ -84,10 +84,10 @@ const toggleStatus = (user) => {
                     </div>
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                         <div class="w-12 h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mb-3 font-bold text-lg">
-                            {{ users.filter(u => u.role === 'client').length }}
+                            {{ users.filter(u => u.role === 'staff').length }}
                         </div>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ users.filter(u => u.role === 'client').length }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Clients</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ users.filter(u => u.role === 'staff').length }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Staffs</p>
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@ const toggleStatus = (user) => {
                                 <option value="">All Roles</option>
                                 <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
-                                <option value="client">Client</option>
+                                <option value="staff">Staff</option>
                             </select>
                         </div>
 
@@ -148,7 +148,7 @@ const toggleStatus = (user) => {
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">User</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Company</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Minutes</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Memos</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                             </tr>
@@ -174,14 +174,14 @@ const toggleStatus = (user) => {
                                         :class="{
                                             'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
                                             'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': user.role === 'manager',
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'client'
+                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'staff'
                                         }">
                                         {{ user.role }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span v-if="user.role === 'client'" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                                        {{ user.meeting_minutes_count }}
+                                    <span v-if="user.role === 'staff'" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                                        {{ user.meeting_memos_count }}
                                     </span>
                                     <span v-else class="text-gray-400 dark:text-gray-600 text-sm">-</span>
                                 </td>

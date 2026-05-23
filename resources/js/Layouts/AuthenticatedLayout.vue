@@ -81,7 +81,7 @@ const roleBadge = computed(() => ({
     super_admin: { label: 'Super Admin', cls: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
     admin:       { label: 'Admin',       cls: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
     manager:     { label: 'Manager',     cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-    client:      { label: 'Client',      cls: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+    staff:      { label: 'Staff',      cls: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
 }[role.value] ?? { label: role.value, cls: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' }));
 
 const navigation = computed(() => {
@@ -89,7 +89,7 @@ const navigation = computed(() => {
     if (role.value === 'admin') {
         nav.push({ name: 'Dashboard', href: route('admin.dashboard'), current: route().current('admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
-        nav.push({ name: 'Meeting Minutes', href: route('admin.meeting-minutes.index'), current: route().current('admin.meeting-minutes.*'), icon: 'document' });
+        nav.push({ name: ' Memos', href: route('admin.meeting-memos.index'), current: route().current('admin.meeting-memos.*'), icon: 'document' });
         nav.push({ name: 'Attendance', href: route('admin.attendance.index'), current: route().current('admin.attendance.index'), icon: 'clock' });
         nav.push({ name: 'Calendar', href: route('admin.calendar.index'), current: route().current('admin.calendar.*'), icon: 'calendar' });
     }
@@ -101,12 +101,12 @@ const navigation = computed(() => {
         // nav.push({ name: 'Calendar', href: route('super-admin.attendance.index'), current: route().current('super-admin.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'manager') {
-        nav.push({ name: 'Meeting Minutes', href: route('manager.meeting-minutes.index'), current: route().current('manager.meeting-minutes.*'), icon: 'document' });
+        nav.push({ name: ' Memos', href: route('manager.meeting-memos.index'), current: route().current('manager.meeting-memos.*'), icon: 'document' });
         nav.push({ name: 'Calendar', href: route('manager.attendance.index'), current: route().current('manager.attendance.*'), icon: 'clock' });
     }
-    if (role.value === 'client') {
-        nav.push({ name: 'My Minutes', href: route('client.meeting-minutes.index'), current: route().current('client.meeting-minutes.*'), icon: 'document' });
-        nav.push({ name: 'Calendar', href: route('client.attendance.index'), current: route().current('client.attendance.*'), icon: 'clock' });
+    if (role.value === 'staff') {
+        nav.push({ name: 'My Memos', href: route('staff.meeting-memos.index'), current: route().current('staff.meeting-memos.*'), icon: 'document' });
+        nav.push({ name: 'Calendar', href: route('staff.attendance.index'), current: route().current('staff.attendance.*'), icon: 'clock' });
     }
     return nav;
 });

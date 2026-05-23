@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('company_id')->nullable()->after('id')->constrained('companies')->nullOnDelete();
-            $table->enum('role', ['super_admin', 'admin', 'manager', 'client'])->default('client')->after('email');
+            $table->enum('role', ['super_admin', 'admin', 'manager', 'staff'])->default('staff')->after('email');
             $table->enum('status', ['active', 'inactive'])->default('active')->after('role');
         });
     }

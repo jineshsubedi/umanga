@@ -30,14 +30,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Company::class);
     }
 
-    public function meetingMinutes()
+    public function meetingMemos()
     {
-        return $this->hasMany(MeetingMinute::class, 'created_by');
+        return $this->hasMany(MeetingMemo::class, 'created_by');
     }
 
     public function reviews()
     {
-        return $this->hasMany(MeetingMinuteReview::class, 'reviewed_by');
+        return $this->hasMany(MeetingMemoReview::class, 'reviewed_by');
     }
 
     public function attendances()
@@ -48,5 +48,5 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuperAdmin(): bool { return $this->role === 'super_admin'; }
     public function isAdmin(): bool      { return $this->role === 'admin'; }
     public function isManager(): bool    { return $this->role === 'manager'; }
-    public function isClient(): bool     { return $this->role === 'client'; }
+    public function isStaff(): bool     { return $this->role === 'staff'; }
 }

@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MeetingMinuteAttachment extends Model
+class MeetingMemoAttachment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'meeting_minute_id',
+        'meeting_memo_id',
         'file_name',
         'file_path',
         'file_type',
@@ -21,9 +21,9 @@ class MeetingMinuteAttachment extends Model
         'file_size_formatted',
     ];
 
-    public function meetingMinute()
+    public function meetingMemo()
     {
-        return $this->belongsTo(MeetingMinute::class);
+        return $this->belongsTo(MeetingMemo::class);
     }
 
     public function getFileSizeFormattedAttribute(): string

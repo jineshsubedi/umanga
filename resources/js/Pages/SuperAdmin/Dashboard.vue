@@ -39,7 +39,7 @@ const calcStatusHeight = (val) => {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Stats Grid -->
-                <!-- Stats Section 1: Companies & Minutes -->
+                <!-- Stats Section 1: Companies & Memos -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                         <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3">
@@ -69,8 +69,8 @@ const calcStatusHeight = (val) => {
                         <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mb-3">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_minutes }}</p>
-                        <p class="text-sm text-gray-500 dark:text-white font-medium mt-1">Total Minutes</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_memos }}</p>
+                        <p class="text-sm text-gray-500 dark:text-white font-medium mt-1">Total Memos</p>
                     </div>
                 </div>
 
@@ -104,8 +104,8 @@ const calcStatusHeight = (val) => {
                         <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.managers_count }} / {{ stats.clients_count }}</p>
-                        <p class="text-sm text-gray-500 dark:text-white font-medium mt-1">Managers / Clients</p>
+                        <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.managers_count }} / {{ stats.staffs_count }}</p>
+                        <p class="text-sm text-gray-500 dark:text-white font-medium mt-1">Managers / Staffs</p>
                     </div>
                 </div>
 
@@ -144,9 +144,9 @@ const calcStatusHeight = (val) => {
 
                 <!-- Graphs -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Meeting Minutes Chart -->
+                    <!--  Memos Chart -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Minutes Created (Last 6 Months)</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Memos Created (Last 6 Months)</h3>
                         <div class="relative h-64 flex items-end justify-between gap-2 pt-6 border-b border-gray-200">
                             <!-- Y-axis scale lines -->
                             <div class="absolute inset-0 flex flex-col justify-between text-xs text-gray-400 pointer-events-none pb-6">
@@ -156,7 +156,7 @@ const calcStatusHeight = (val) => {
                             </div>
                             
                             <!-- Bars -->
-                            <div v-for="(val, index) in chartData.minutes" :key="'m-'+index" 
+                            <div v-for="(val, index) in chartData.memos" :key="'m-'+index" 
                                 class="relative w-full flex flex-col items-center justify-end h-full z-10 pb-1 group">
                                 <div class="w-full max-w-[3rem] bg-indigo-500 rounded-t-md transition-all duration-500 group-hover:bg-indigo-600"
                                      :style="{ height: calcHeight(val) }"></div>
@@ -186,11 +186,11 @@ const calcStatusHeight = (val) => {
                         </div>
                     </div>
 
-                    <!-- Current Month Daily Minutes Chart -->
+                    <!-- Current Month Daily Memos Chart -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 col-span-full">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Daily Minutes (Created vs Approved vs Rejected)</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Daily Memos (Created vs Approved vs Rejected)</h3>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Showing data for selected year and month</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-4">

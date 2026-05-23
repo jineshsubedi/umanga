@@ -5,7 +5,7 @@ import { Head, Link } from '@inertiajs/vue3';
 const props = defineProps({
     stats: Object,
     recentUsers: Array,
-    recentMinutes: Array,
+    recentMemos: Array,
     company: Object,
 });
 
@@ -68,25 +68,25 @@ const formatDate = (dateStr) => {
                     </div>
                 </div>
 
-                <!-- Clients -->
+                <!-- Staffs -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex items-center hover:shadow-md transition-shadow">
                     <div class="p-3 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 mr-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Clients</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.users.clients }}</p>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Staffs</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.users.staffs }}</p>
                     </div>
                 </div>
 
-                <!-- Pending Minutes -->
+                <!-- Pending Memos -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex items-center hover:shadow-md transition-shadow">
                     <div class="p-3 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 mr-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Reviews</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.minutes.pending }}</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.memos.pending }}</p>
                     </div>
                 </div>
             </div>
@@ -115,7 +115,7 @@ const formatDate = (dateStr) => {
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
                                     :class="{
                                         'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': user.role === 'manager',
-                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'client'
+                                        'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'staff'
                                     }">
                                     {{ user.role }}
                                 </span>
@@ -128,34 +128,34 @@ const formatDate = (dateStr) => {
                     </div>
                 </div>
 
-                <!-- Recent Meeting Minutes -->
+                <!-- Recent  Memos -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Meeting Minutes</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent  Memos</h3>
                     </div>
                     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                        <div v-for="minute in recentMinutes" :key="minute.id" class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <div v-for="memo in recentMemos" :key="memo.id" class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <div class="flex items-start justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{{ minute.title }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">By {{ minute.creator.name }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{{ memo.title }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">By {{ memo.creator.name }}</p>
                                 </div>
                                 <div class="text-right flex flex-col items-end gap-1">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
                                         :class="{
-                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': minute.status === 'pending',
-                                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': minute.status === 'approved',
-                                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': minute.status === 'rejected',
-                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': minute.status === 'draft',
+                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': memo.status === 'pending',
+                                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': memo.status === 'approved',
+                                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': memo.status === 'rejected',
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': memo.status === 'draft',
                                         }">
-                                        {{ minute.status }}
+                                        {{ memo.status }}
                                     </span>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(minute.created_at) }}</span>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatDate(memo.created_at) }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="recentMinutes.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                            No meeting minutes recorded.
+                        <div v-if="recentMemos.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                            No meeting memos recorded.
                         </div>
                     </div>
                 </div>

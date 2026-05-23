@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $users = User::where('company_id', auth()->user()->company_id)
             ->where('role', '!=', 'super_admin')
-            ->withCount('meetingMinutes')
+            ->withCount('meetingMemos')
             ->latest()
             ->get();
 
@@ -33,7 +33,7 @@ class UserController extends Controller
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
-            'role'     => 'required|in:manager,client',
+            'role'     => 'required|in:manager,staff',
             'password' => ['required', Rules\Password::defaults()],
         ]);
 
@@ -63,7 +63,7 @@ class UserController extends Controller
 
         $request->validate([
             'name'   => 'required|string|max:255',
-            'role'   => 'required|in:manager,client',
+            'role'   => 'required|in:manager,staff',
             'status' => 'required|in:active,inactive',
         ]);
 

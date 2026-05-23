@@ -25,7 +25,7 @@ const clearFilter = () => {
 const roleBadge = (role) => ({
     admin:   'bg-blue-100 text-blue-700',
     manager: 'bg-green-100 text-green-700',
-    client:  'bg-orange-100 text-orange-700',
+    staff:  'bg-orange-100 text-orange-700',
 }[role] ?? 'bg-gray-100 text-gray-700');
 
 const formatDate = (d) => {

@@ -144,6 +144,19 @@ const navigation = computed(() => {
                 </Link>
             </div>
 
+            <!-- Company Context Badge -->
+            <div v-if="user?.company" class="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-sm ring-1 ring-white/20">
+                        {{ user.company.name.charAt(0) }}
+                    </div>
+                    <div class="flex flex-col flex-1 overflow-hidden">
+                        <span class="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider leading-none mb-0.5">Workspace</span>
+                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight truncate" :title="user.company.name">{{ user.company.name }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Navigation Links -->
             <nav class="flex-1 px-4 mt-6 space-y-2">
                 <Link v-for="item in navigation" :key="item.name" :href="item.href"

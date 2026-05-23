@@ -53,6 +53,9 @@ class HandleInertiaRequests extends Middleware
                     'email'      => $request->user()->email,
                     'role'       => $request->user()->role,
                     'company_id' => $request->user()->company_id,
+                    'company'    => $request->user()->company ? [
+                        'name' => $request->user()->company->name,
+                    ] : null,
                 ] : null,
                 'notifications' => $request->user() ? $request->user()->unreadNotifications()->take(5)->get() : [],
             ],

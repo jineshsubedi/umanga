@@ -35,9 +35,7 @@ defineProps({
                             <Link v-if="canLogin" :href="route('login')" class="text-sm font-semibold text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors px-3 py-2 rounded-md">
                                 Log in
                             </Link>
-                            <Link v-if="canRegister" :href="route('register')" class="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors px-5 py-2.5 rounded-lg shadow-md shadow-indigo-600/20">
-                                Register Company
-                            </Link>
+
                         </template>
                     </div>
                 </div>
@@ -61,9 +59,7 @@ defineProps({
                     A centralized, multi-tenant platform for managing meeting memos, streamlining approvals, and fostering organizational transparency.
                 </p>
                 <div class="flex justify-center gap-4">
-                    <Link :href="route('register')" class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5">
-                        Start for Free
-                    </Link>
+
                     <a href="#features" class="inline-flex items-center justify-center px-8 py-3.5 border-2 border-gray-300 dark:border-gray-700 text-base font-semibold rounded-lg text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
                         Learn More
                     </a>

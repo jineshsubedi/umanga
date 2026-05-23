@@ -69,7 +69,7 @@ const tabs = ['pending', 'approved', 'rejected'];
                                 </td>
                             </tr>
                             <tr v-if="memos.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">No {{ status }} meeting memos.</td>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">No {{ status }} memos.</td>
                             </tr>
                         </tbody>
                     </table>

@@ -34,31 +34,31 @@ const roleBadge = (role) => ({
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Stats -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div v-for="(val, key) in stats" :key="key" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+                    <div v-for="(val, key) in stats" :key="key" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 dark:bg-gray-800 dark:text-white dark:border-gray-700 text-center">
                         <p class="text-2xl font-bold text-indigo-600">{{ val }}</p>
-                        <p class="text-xs text-gray-500 capitalize mt-1">{{ key.replace(/_/g,' ') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 capitalize mt-1">{{ key.replace(/_/g,' ') }}</p>
                     </div>
                 </div>
 
                 <!-- Users Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-100">
-                        <h3 class="font-semibold text-gray-800">Users ({{ company.users.length }})</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                        <h3 class="font-semibold text-gray-800 dark:text-white">Users ({{ company.users.length }})</h3>
                     </div>
-                    <table class="min-w-full divide-y divide-gray-100">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Memos</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Memos</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-50">
-                            <tr v-for="user in company.users" :key="user.id" class="hover:bg-gray-50">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ user.name }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ user.email }}</td>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
+                            <tr v-for="user in company.users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ user.name }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium" :class="roleBadge(user.role)">{{ user.role }}</span>
                                 </td>
@@ -66,11 +66,11 @@ const roleBadge = (role) => ({
                                     <span v-if="user.role === 'staff'" class="text-sm font-medium text-gray-600">
                                         {{ user.meeting_memos_count }}
                                     </span>
-                                    <span v-else class="text-sm text-gray-400">-</span>
+                                    <span v-else class="text-sm text-gray-400 dark:text-gray-400">-</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                        :class="user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                        :class="user.status === 'active' ? 'bg-green-100 dark:bg-green-800 text-white' : 'bg-red-100 text-white'">
                                         {{ user.status }}
                                     </span>
                                 </td>

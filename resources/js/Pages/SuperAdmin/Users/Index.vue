@@ -46,6 +46,15 @@ const toggleStatus = (user) => {
         });
     }
 };
+
+const destroy = (user) => {
+    if (confirm(`Are you sure you want to PERMANENTLY delete ${user.name}? This action cannot be undone.`)) {
+        router.delete(route('super-admin.users.destroy', user.id), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }
+};
 </script>
 
 <template>
@@ -54,6 +63,14 @@ const toggleStatus = (user) => {
         <template #header>
             <div class="flex items-center justify-between w-full">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">System Users Overview</h2>
+                <div class="flex items-center gap-3">
+                    <Link :href="route('super-admin.users.bulk-create')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        Bulk Add Users
+                    </Link>
+                    <Link :href="route('super-admin.users.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                        Add User
+                    </Link>
+                </div>
             </div>
         </template>
 
@@ -192,9 +209,13 @@ const toggleStatus = (user) => {
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right space-x-3">
+                                    <Link :href="route('super-admin.users.edit', user.id)" class="text-blue-600 hover:text-blue-900 text-sm font-medium">Edit</Link>
                                     <button @click="toggleStatus(user)" class="text-sm font-medium transition-colors"
-                                        :class="user.status === 'active' ? 'text-red-600 dark:text-red-400 hover:text-red-800' : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-800'">
+                                        :class="user.status === 'active' ? 'text-orange-600 dark:text-orange-400 hover:text-orange-800' : 'text-green-600 dark:text-green-400 hover:text-green-800'">
                                         {{ user.status === 'active' ? 'Deactivate' : 'Activate' }}
+                                    </button>
+                                    <button @click="destroy(user)" class="text-red-600 hover:text-red-900 text-sm font-medium">
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

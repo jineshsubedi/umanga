@@ -56,7 +56,7 @@ defineProps({
                     Elevate Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Corporate Governance</span>
                 </h1>
                 <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-700 dark:text-gray-300 mb-10">
-                    A centralized, multi-tenant platform for managing meeting memos, streamlining approvals, and fostering organizational transparency.
+                    A centralized, multi-tenant platform for managing memos, streamlining approvals, and fostering organizational transparency.
                 </p>
                 <div class="flex justify-center gap-4">
 
@@ -89,7 +89,7 @@ defineProps({
                         </div>
                         <h3 class="mt-8 text-xl font-bold text-gray-900 dark:text-white">Role-Based Access</h3>
                         <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">
-                            Granular control over who can create, review, and approve meeting memos. Secure workspaces for Super Admins, Company Admins, Managers, and Staffs.
+                            Granular control over who can create, review, and approve memos. Secure workspaces for Super Admins, Company Admins, Managers, and Staffs.
                         </p>
                     </div>
 

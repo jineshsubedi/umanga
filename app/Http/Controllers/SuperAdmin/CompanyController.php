@@ -27,6 +27,27 @@ class CompanyController extends Controller
         return Inertia::render('SuperAdmin/Companies/Index', compact('companies'));
     }
 
+    public function create()
+    {
+        return Inertia::render('SuperAdmin/Companies/Create');
+    }
+
+    public function store(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'name'    => 'required|string|max:255',
+            'email'   => 'nullable|email|max:255|unique:companies,email',
+            'phone'   => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'status'  => 'required|in:active,inactive',
+        ]);
+
+        Company::create($validated);
+
+        return redirect()->route('super-admin.companies.index')
+            ->with('success', 'Company created successfully.');
+    }
+
     public function show(Company $company)
     {
         $company->load(['users' => fn($q) => $q->where('role', '!=', 'super_admin')->withCount('meetingMemos')]);
@@ -45,6 +66,40 @@ class CompanyController extends Controller
             'company' => $company,
             'stats'   => $stats,
         ]);
+    }
+
+    public function edit(Company $company)
+    {
+        return Inertia::render('SuperAdmin/Companies/Edit', [
+            'company' => $company,
+        ]);
+    }
+
+    public function update(\Illuminate\Http\Request $request, Company $company)
+    {
+        $validated = $request->validate([
+            'name'    => 'required|string|max:255',
+            'email'   => 'nullable|email|max:255|unique:companies,email,' . $company->id,
+            'phone'   => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'status'  => 'required|in:active,inactive',
+        ]);
+
+        $company->update($validated);
+
+        return redirect()->route('super-admin.companies.index')
+            ->with('success', 'Company updated successfully.');
+    }
+
+    public function destroy(Company $company)
+    {
+        // Deleting the company will cascade delete users if DB is set up that way, 
+        // or we can manually delete the users here. Assuming models/DB cascade or we manually delete.
+        $company->users()->delete();
+        $company->delete();
+
+        return redirect()->route('super-admin.companies.index')
+            ->with('success', 'Company and its users have been permanently deleted.');
     }
 
     public function toggleStatus(Company $company)

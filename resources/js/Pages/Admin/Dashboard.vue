@@ -155,7 +155,7 @@ const formatDate = (dateStr) => {
                             </div>
                         </div>
                         <div v-if="recentMemos.length === 0" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-                            No meeting memos recorded.
+                            No memos recorded.
                         </div>
                     </div>
                 </div>

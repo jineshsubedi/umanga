@@ -218,7 +218,7 @@ const isToday = computed(() => {
                                         </div>
                                     </div>
                                     <div v-else class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700">
-                                        <span class="text-sm text-gray-500 dark:text-gray-400">No meeting memos for this day.</span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">No memos for this day.</span>
                                     </div>
                                 </div>
 

@@ -7,15 +7,25 @@ const props = defineProps({ companies: Array });
 const toggle = (company) => {
     router.patch(route('super-admin.companies.toggle-status', company.id));
 };
+
+const destroy = (company) => {
+    if (confirm(`Are you sure you want to PERMANENTLY delete ${company.name} and all its users? This action cannot be undone.`)) {
+        router.delete(route('super-admin.companies.destroy', company.id));
+    }
+};
 </script>
 
 <template>
     <Head title="All Companies" />
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between w-full">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">All Companies</h2>
-                <!-- <span class="text-sm text-gray-500">{{ companies.length }} companies registered</span> -->
+                <div class="flex items-center gap-3">
+                    <Link :href="route('super-admin.companies.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                        Add Company
+                    </Link>
+                </div>                  
             </div>
         </template>
 
@@ -69,10 +79,14 @@ const toggle = (company) => {
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ company.created_at }}</td>
                                 <td class="px-6 py-4 text-right space-x-2">
                                     <Link :href="route('super-admin.companies.show', company.id)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">View</Link>
+                                    <Link :href="route('super-admin.companies.edit', company.id)" class="text-blue-600 hover:text-blue-900 text-sm font-medium">Edit</Link>
                                     <button @click="toggle(company)"
                                         class="text-sm font-medium"
-                                        :class="company.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'">
+                                        :class="company.status === 'active' ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'">
                                         {{ company.status === 'active' ? 'Deactivate' : 'Activate' }}
+                                    </button>
+                                    <button @click="destroy(company)" class="text-red-600 hover:text-red-900 text-sm font-medium">
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

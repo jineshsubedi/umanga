@@ -69,7 +69,7 @@ class CompanySeeder extends Seeder
             // Create  Memos
             $statuses = ['draft', 'pending', 'approved', 'rejected'];
             foreach ($staffs as $staff) {
-                // Each staff creates 3 meeting memos
+                // Each staff creates 3 memos
                 for ($m = 1; $m <= 3; $m++) {
                     $status = $statuses[array_rand($statuses)];
                     

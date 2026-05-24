@@ -7,6 +7,7 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Manager\MeetingMemoController as ManagerMeetingMemoController;
+use App\Http\Controllers\SuperAdmin\MeetingMemoController as SuperAdminMeetingMemoController;
 use App\Http\Controllers\Staff\MeetingMemoController as StaffMeetingMemoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,8 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::match(['put', 'patch'], '/users/{user}', [\App\Http\Controllers\SuperAdmin\UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [\App\Http\Controllers\SuperAdmin\UserController::class, 'destroy'])->name('users.destroy');
         Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\SuperAdmin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::get('/meeting-memos', [SuperAdminMeetingMemoController::class, 'index'])->name('meeting-memos.index');
+        Route::get('/meeting-memos/{meetingMemo}', [SuperAdminMeetingMemoController::class, 'show'])->name('meeting-memos.show');
         Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
     });

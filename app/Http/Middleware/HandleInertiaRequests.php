@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                     'name'       => $request->user()->name,
                     'email'      => $request->user()->email,
                     'role'       => $request->user()->role,
+                    'signature_path' => $request->user()->signature_path ?? null,
                     'company_id' => $request->user()->company_id,
                     'company'    => $request->user()->company ? [
                         'name' => $request->user()->company->name,

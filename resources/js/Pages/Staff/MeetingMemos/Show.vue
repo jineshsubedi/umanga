@@ -25,10 +25,11 @@ const duplicate = () => {
                     <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
                         :class="{
                             'bg-gray-100 text-gray-600': memo.status === 'draft',
-                            'bg-yellow-100 text-yellow-700': memo.status === 'pending',
+                            'bg-yellow-100 text-yellow-700': memo.status === 'pending_manager',
+                            'bg-blue-100 text-blue-700': memo.status === 'pending_admin',
                             'bg-green-100 text-green-700': memo.status === 'approved',
                             'bg-red-100 text-red-700': memo.status === 'rejected',
-                        }">{{ memo.status }}</span>
+                        }">{{ memo.status.replace('_', ' ') }}</span>
                 </div>
             </div>
         </template>

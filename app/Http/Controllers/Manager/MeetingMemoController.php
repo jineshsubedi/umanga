@@ -13,7 +13,7 @@ class MeetingMemoController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->get('status', 'pending');
+        $status = $request->get('status', 'pending_manager');
         $companyId = auth()->user()->company_id;
         $managerId = auth()->id();
 
@@ -27,8 +27,8 @@ class MeetingMemoController extends Controller
             ->get();
 
         $counts = [
-            'pending'  => MeetingMemo::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'pending')->count(),
-            'approved' => MeetingMemo::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'approved')->count(),
+            'pending'  => MeetingMemo::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'pending_manager')->count(),
+            'approved' => MeetingMemo::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->whereIn('status', ['pending_admin', 'approved'])->count(),
             'rejected' => MeetingMemo::where('company_id', $companyId)->whereHas('managers', fn($q) => $q->where('manager_id', $managerId))->where('status', 'rejected')->count(),
         ];
 
@@ -48,7 +48,7 @@ class MeetingMemoController extends Controller
     {
         abort_if($meetingMemo->company_id !== auth()->user()->company_id, 403);
         abort_if(!$meetingMemo->managers()->where('manager_id', auth()->id())->exists(), 403, 'You are not assigned to review this memo.');
-        abort_if($meetingMemo->status !== 'pending', 422, 'This memo is not pending review.');
+        abort_if($meetingMemo->status !== 'pending_manager', 422, 'This memo is not pending your review.');
 
         $request->validate([
             'status'  => 'required|in:approved,rejected',
@@ -62,7 +62,8 @@ class MeetingMemoController extends Controller
             'comment'           => $request->comment,
         ]);
 
-        $meetingMemo->update(['status' => $request->status]);
+        $newStatus = $request->status === 'approved' ? 'pending_admin' : 'rejected';
+        $meetingMemo->update(['status' => $newStatus]);
 
         $meetingMemo->creator->notify(new MemoReviewed(
             $meetingMemo,
@@ -73,5 +74,16 @@ class MeetingMemoController extends Controller
 
         return redirect()->route('manager.meeting-memos.index')
             ->with('success', ' memo ' . $request->status . ' successfully.');
+    }
+
+    public function downloadPdf(MeetingMemo $meetingMemo)
+    {
+        abort_if($meetingMemo->company_id !== auth()->user()->company_id, 403);
+        abort_if(!$meetingMemo->managers()->where('manager_id', auth()->id())->exists(), 403, 'You are not assigned to this memo.');
+        
+        $meetingMemo->load(['creator', 'company', 'reviews.reviewer']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.memo', ['memo' => $meetingMemo]);
+        return $pdf->download('memo-' . $meetingMemo->id . '.pdf');
     }
 }

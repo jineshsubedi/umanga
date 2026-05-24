@@ -78,6 +78,7 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\SuperAdmin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::get('/meeting-memos', [SuperAdminMeetingMemoController::class, 'index'])->name('meeting-memos.index');
         Route::get('/meeting-memos/{meetingMemo}', [SuperAdminMeetingMemoController::class, 'show'])->name('meeting-memos.show');
+        Route::get('/meeting-memos/{meetingMemo}/pdf', [SuperAdminMeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
     });
@@ -92,6 +93,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::get('/meeting-memos', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'index'])->name('meeting-memos.index');
         Route::get('/meeting-memos/{meetingMemo}', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'show'])->name('meeting-memos.show');
+        Route::post('/meeting-memos/{meetingMemo}/review', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'review'])->name('meeting-memos.review');
+        Route::get('/meeting-memos/{meetingMemo}/pdf', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
     });
@@ -104,6 +107,7 @@ Route::middleware(['auth', 'verified', 'role:manager'])
         Route::get('/meeting-memos', [ManagerMeetingMemoController::class, 'index'])->name('meeting-memos.index');
         Route::get('/meeting-memos/{meetingMemo}', [ManagerMeetingMemoController::class, 'show'])->name('meeting-memos.show');
         Route::post('/meeting-memos/{meetingMemo}/review', [ManagerMeetingMemoController::class, 'review'])->name('meeting-memos.review');
+        Route::get('/meeting-memos/{meetingMemo}/pdf', [ManagerMeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/attendance', [\App\Http\Controllers\Manager\AttendanceController::class, 'index'])->name('attendance.index');
     });
 

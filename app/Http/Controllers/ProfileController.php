@@ -34,6 +34,14 @@ class ProfileController extends Controller
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
+        
+        if ($request->hasFile('signature')) {
+            if ($request->user()->signature_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($request->user()->signature_path);
+            }
+            $path = $request->file('signature')->store('signatures', 'public');
+            $request->user()->signature_path = $path;
+        }
 
         $request->user()->save();
 

@@ -23,7 +23,11 @@ class MeetingMemoController extends Controller
             ->with(['creator:id,name', 'company:id,name', 'latestReview.reviewer:id,name']);
 
         if ($status !== 'all') {
-            $query->where('status', $status);
+            if ($status === 'pending') {
+                $query->whereIn('status', ['pending_manager', 'pending_admin']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         if ($search) {
@@ -60,7 +64,7 @@ class MeetingMemoController extends Controller
 
         $counts = [
             'all'      => (clone $countsQuery)->count(),
-            'pending'  => (clone $countsQuery)->where('status', 'pending')->count(),
+            'pending'  => (clone $countsQuery)->whereIn('status', ['pending_manager', 'pending_admin'])->count(),
             'approved' => (clone $countsQuery)->where('status', 'approved')->count(),
             'rejected' => (clone $countsQuery)->where('status', 'rejected')->count(),
         ];
@@ -86,5 +90,13 @@ class MeetingMemoController extends Controller
         $meetingMemo->load(['creator:id,name', 'company:id,name', 'reviews.reviewer:id,name', 'attachments']);
 
         return Inertia::render('SuperAdmin/MeetingMemos/Show', ['memo' => $meetingMemo]);
+    }
+
+    public function downloadPdf(MeetingMemo $meetingMemo)
+    {
+        $meetingMemo->load(['creator', 'company', 'reviews.reviewer']);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.memo', ['memo' => $meetingMemo]);
+        return $pdf->download('memo-' . $meetingMemo->id . '.pdf');
     }
 }

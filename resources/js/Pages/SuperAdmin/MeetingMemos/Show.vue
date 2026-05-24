@@ -13,14 +13,22 @@ const props = defineProps({ memo: Object });
                 <Link :href="route('super-admin.meeting-memos.index')" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </Link>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">{{ memo.title }}</h2>
-                <span class="text-sm px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 ml-4 font-medium">{{ memo.company?.name }}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 ml-4 font-medium">{{ memo.company?.name }}</span>
+                </div>
             </div>
         </template>
 
         <div class="py-8">
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Memo Detail -->
+                 <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">{{ memo.title }}</h2>
+                    <a :href="route('super-admin.meeting-memos.pdf', memo.id)" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ml-auto">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Download PDF
+                    </a>
+                </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -30,11 +38,12 @@ const props = defineProps({ memo: Object });
                         <span class="px-3 py-1 rounded-full text-sm font-medium capitalize"
                             :class="{
                                 'bg-gray-100 text-gray-600': memo.status === 'draft',
-                                'bg-yellow-100 text-yellow-700': memo.status === 'pending',
+                                'bg-yellow-100 text-yellow-700': memo.status === 'pending_manager',
+                                'bg-blue-100 text-blue-700': memo.status === 'pending_admin',
                                 'bg-green-100 text-green-700': memo.status === 'approved',
                                 'bg-red-100 text-red-700': memo.status === 'rejected',
                             }">
-                            {{ memo.status }}
+                            {{ memo.status.replace('_', ' ') }}
                         </span>
                     </div>
                     <div class="prose max-w-none">
@@ -55,7 +64,7 @@ const props = defineProps({ memo: Object });
                                     {{ attachment.file_type || 'FILE' }}
                                 </div>
                                 <div class="truncate">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ attachment.file_name }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ attachment.file_name }}</p>
                                     <p class="text-xs text-gray-500">{{ attachment.file_size_formatted }}</p>
                                 </div>
                             </div>

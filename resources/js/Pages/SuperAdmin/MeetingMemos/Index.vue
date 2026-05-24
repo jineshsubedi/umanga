@@ -30,7 +30,8 @@ watch([search, company_id, staff_id, approver_id], ([newSearch, newCompany, newS
 
 const statusBadge = (s) => ({
     draft:    'bg-gray-100 text-gray-600',
-    pending:  'bg-yellow-100 text-yellow-700',
+    pending_manager:  'bg-yellow-100 text-yellow-700',
+    pending_admin: 'bg-blue-100 text-blue-700',
     approved: 'bg-green-100 text-green-700',
     rejected: 'bg-red-100 text-red-700',
 }[s] ?? 'bg-gray-100 text-gray-600');
@@ -113,7 +114,7 @@ const tabs = ['all', 'pending', 'approved', 'rejected'];
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ memo.formatted_meeting_date }}</td>
                                 <td class="px-6 py-4">
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(memo.status)">
-                                        {{ memo.status }}
+                                        {{ memo.status.replace('_', ' ') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">

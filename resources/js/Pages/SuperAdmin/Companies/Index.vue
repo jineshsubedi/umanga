@@ -21,11 +21,6 @@ const destroy = (company) => {
         <template #header>
             <div class="flex items-center justify-between w-full">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">All Companies</h2>
-                <div class="flex items-center gap-3">
-                    <Link :href="route('super-admin.companies.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-                        Add Company
-                    </Link>
-                </div>                  
             </div>
         </template>
 
@@ -48,7 +43,14 @@ const destroy = (company) => {
                 </div>
 
                 <!-- Table -->
-                 <span class="text-sm text-gray-500 dark:text-gray-400">{{ companies.length }} companies registered</span>
+                <div class="flex items-center justify-between w-full">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ companies.length }} companies registered</span>
+                    <div class="flex items-center gap-3">
+                        <Link :href="route('super-admin.companies.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            Add Company
+                        </Link>
+                    </div> 
+                </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50 dark:bg-gray-800">

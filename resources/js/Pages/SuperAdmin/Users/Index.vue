@@ -63,14 +63,6 @@ const destroy = (user) => {
         <template #header>
             <div class="flex items-center justify-between w-full">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">System Users Overview</h2>
-                <div class="flex items-center gap-3">
-                    <Link :href="route('super-admin.users.bulk-create')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        Bulk Add Users
-                    </Link>
-                    <Link :href="route('super-admin.users.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-                        Add User
-                    </Link>
-                </div>
             </div>
         </template>
 
@@ -159,6 +151,17 @@ const destroy = (user) => {
 
                 <!-- Users Table -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="flex items-center justify-between w-full p-4">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ users.length }} users registered</span>
+                        <div class="flex items-center gap-2">
+                            <Link :href="route('super-admin.users.bulk-create')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                Bulk Add Users
+                            </Link>
+                            <Link :href="route('super-admin.users.create')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                Add User
+                            </Link>
+                        </div>
+                    </div>
                     <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
                             <tr>

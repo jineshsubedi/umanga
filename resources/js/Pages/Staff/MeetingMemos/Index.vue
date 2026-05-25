@@ -6,7 +6,8 @@ const props = defineProps({ memos: Array });
 
 const statusBadge = (s) => ({
     draft:    'bg-gray-100 text-gray-600',
-    pending:  'bg-yellow-100 text-yellow-700',
+    pending_manager:  'bg-yellow-100 text-yellow-700',
+    pending_admin: 'bg-blue-100 text-blue-700',
     approved: 'bg-green-100 text-green-700',
     rejected: 'bg-red-100 text-red-700',
 }[s] ?? 'bg-gray-100 text-gray-600');
@@ -56,7 +57,7 @@ const duplicate = (memo) => {
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-3 mb-1">
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" :class="statusBadge(memo.status)">
-                                        {{ memo.status }}
+                                        {{ memo.status.replace('_', ' ') }}
                                     </span>
                                     <span class="text-xs text-gray-400">{{ memo.formatted_meeting_date }}</span>
                                 </div>

@@ -135,7 +135,7 @@ class MeetingMemoController extends Controller
         abort_if($meetingMemo->created_by !== auth()->id(), 403);
         abort_if($meetingMemo->status !== 'draft', 422, 'Only draft memos can be submitted.');
 
-        $meetingMemo->update(['status' => 'pending']);
+        $meetingMemo->update(['status' => 'pending_manager']);
 
         // Notify assigned managers
         $managers = $meetingMemo->managers()->where('status', 'active')->get();

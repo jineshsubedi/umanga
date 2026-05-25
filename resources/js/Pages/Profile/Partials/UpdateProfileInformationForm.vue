@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 defineProps({
     mustVerifyEmail: {
@@ -17,9 +18,38 @@ defineProps({
 const user = usePage().props.auth.user;
 
 const form = useForm({
+    _method: 'patch',
     name: user.name,
     email: user.email,
+    signature: null,
 });
+
+const previewUrl = ref(null);
+const signatureInput = ref(null);
+
+const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    form.signature = file;
+    
+    if (file) {
+        previewUrl.value = URL.createObjectURL(file);
+    } else {
+        previewUrl.value = null;
+    }
+};
+
+const updateProfileInformation = () => {
+    form.post(route('profile.update'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            previewUrl.value = null;
+            form.reset('signature');
+            if (signatureInput.value) {
+                signatureInput.value.value = null;
+            }
+        },
+    });
+};
 </script>
 
 <template>
@@ -32,7 +62,7 @@ const form = useForm({
             </p>
         </header>
 
-        <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
+        <form @submit.prevent="updateProfileInformation" class="mt-6 space-y-6">
             <div>
                 <InputLabel for="name" value="Name" />
 
@@ -62,6 +92,35 @@ const form = useForm({
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div v-if="['manager', 'admin'].includes(user.role)">
+                <InputLabel for="signature" value="Signature (For Memo Approval)" />
+
+                <input
+                    id="signature"
+                    ref="signatureInput"
+                    type="file"
+                    class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400
+                           file:mr-4 file:py-2 file:px-4
+                           file:rounded-md file:border-0
+                           file:text-sm file:font-semibold
+                           file:bg-indigo-50 file:text-indigo-700
+                           hover:file:bg-indigo-100 dark:file:bg-indigo-900/50 dark:file:text-indigo-400"
+                    @change="handleFileChange"
+                    accept="image/*"
+                />
+
+                <div v-if="previewUrl" class="mt-3">
+                    <p class="text-sm text-gray-500 mb-2">New Signature Preview:</p>
+                    <img :src="previewUrl" alt="New Signature Preview" class="h-16 object-contain border border-gray-200 dark:border-gray-700 rounded bg-white p-1" />
+                </div>
+                <div v-else-if="$page.props.auth.user.signature_path" class="mt-3">
+                    <p class="text-sm text-gray-500 mb-2">Current Signature:</p>
+                    <img :src="`/storage/${$page.props.auth.user.signature_path}`" alt="Signature" class="h-16 object-contain border border-gray-200 dark:border-gray-700 rounded bg-white p-1" />
+                </div>
+
+                <InputError class="mt-2" :message="form.errors.signature" />
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">

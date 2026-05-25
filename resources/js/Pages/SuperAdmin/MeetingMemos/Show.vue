@@ -1,16 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({ memo: Object });
-
-const form = useForm({ status: '', comment: '' });
-
-const submit = () => {
-    form.post(route('admin.meeting-memos.review', props.memo.id), {
-        onSuccess: () => form.reset(),
-    });
-};
 </script>
 
 <template>
@@ -18,11 +10,11 @@ const submit = () => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center gap-3">
-                <Link :href="route('admin.meeting-memos.index')" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600">
+                <Link :href="route('super-admin.meeting-memos.index')" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </Link>
                 <div class="flex items-center gap-3">
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">{{ memo.title }}</h2>
+                    <span class="text-sm px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 ml-4 font-medium">{{ memo.company?.name }}</span>
                 </div>
             </div>
         </template>
@@ -31,7 +23,8 @@ const submit = () => {
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
                 <!-- Memo Detail -->
                  <div class="flex items-center gap-3">
-                    <a :href="route('admin.meeting-memos.pdf', memo.id)" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">{{ memo.title }}</h2>
+                    <a :href="route('super-admin.meeting-memos.pdf', memo.id)" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ml-auto">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Download PDF
                     </a>
@@ -71,7 +64,7 @@ const submit = () => {
                                     {{ attachment.file_type || 'FILE' }}
                                 </div>
                                 <div class="truncate">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-400 truncate">{{ attachment.file_name }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{{ attachment.file_name }}</p>
                                     <p class="text-xs text-gray-500">{{ attachment.file_size_formatted }}</p>
                                 </div>
                             </div>
@@ -102,42 +95,6 @@ const submit = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Review Form (only if pending_admin) -->
-                <div v-if="memo.status === 'pending_admin'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <h3 class="font-semibold dark:text-gray-100 mb-4">Submit Your Review</h3>
-                    <form @submit.prevent="submit" class="space-y-4">
-                        <div class="flex gap-3">
-                            <button type="button" @click="form.status = 'approved'"
-                                class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'approved' ? 'dark:border-green-500 dark:bg-green-50 text-green-700' : 'dark:border-gray-200 dark:text-gray-600 dark:hover:border-green-300'">
-                                ✓ Approve
-                            </button>
-                            <button type="button" @click="form.status = 'rejected'"
-                                class="flex-1 py-3 px-4 rounded-lg border-2 font-medium text-sm transition-all"
-                                :class="form.status === 'rejected' ? 'dark:border-red-500 dark:bg-red-50 dark:text-red-700' : 'dark:border-gray-200 dark:text-gray-600 dark:hover:border-red-300'">
-                                ✗ Reject
-                            </button>
-                        </div>
-                        <p v-if="form.errors.status" class="text-sm text-red-600">{{ form.errors.status }}</p>
-
-                        <div v-if="form.status === 'rejected'">
-                            <label class="block text-sm font-medium dark:text-gray-100 mb-1">Rejection Reason <span class="dark:text-red-500">*</span></label>
-                            <textarea v-model="form.comment" rows="4"
-                                class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm text-gray-600"
-                                placeholder="Explain what needs to be corrected..."></textarea>
-                            <p v-if="form.errors.comment" class="text-sm text-red-600 mt-1">{{ form.errors.comment }}</p>
-                        </div>
-
-                        <div v-if="form.status" class="flex justify-end">
-                            <button type="submit" :disabled="form.processing"
-                                class="px-6 py-2 rounded-lg text-white font-medium text-sm transition-colors"
-                                :class="form.status === 'approved' ? 'dark:bg-green-600 dark:hover:bg-green-700' : 'dark:bg-red-600 dark:hover:dark:bg-red-700'">
-                                Submit Review
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

@@ -97,6 +97,7 @@ const navigation = computed(() => {
         nav.push({ name: 'Dashboard', href: route('super-admin.dashboard'), current: route().current('super-admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.companies.*'), icon: 'office' });
         nav.push({ name: 'Users', href: route('super-admin.users.index'), current: route().current('super-admin.users.*'), icon: 'users' });
+        nav.push({ name: 'Memos', href: route('super-admin.meeting-memos.index'), current: route().current('super-admin.meeting-memos.*'), icon: 'document' });
         nav.push({ name: 'Settings', href: route('super-admin.settings.index'), current: route().current('super-admin.settings.*'), icon: 'settings' });
         // nav.push({ name: 'Calendar', href: route('super-admin.attendance.index'), current: route().current('super-admin.attendance.*'), icon: 'clock' });
     }

@@ -5,12 +5,14 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import RichTextEditor from '@/Components/RichTextEditor.vue';
+import { DatePicker } from 'v-calendar';
+import 'v-calendar/style.css';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({ managers: Array });
 
-const form = useForm({ title: '', content: '', meeting_date: '', manager_ids: [], attachments: [] });
+const form = useForm({ title: '', content: '', meeting_date: new Date(), manager_ids: [], attachments: [] });
 const fileInput = ref(null);
 
 const isOpen = ref(false);
@@ -47,7 +49,20 @@ const removeFile = (index) => {
     form.attachments.splice(index, 1);
 };
 
-const submit = () => form.post(route('staff.meeting-memos.store'), { forceFormData: true });
+const submit = () => {
+    let originalDate = form.meeting_date;
+    if (form.meeting_date instanceof Date) {
+        const d = form.meeting_date;
+        const pad = (n) => n.toString().padStart(2, '0');
+        form.meeting_date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    }
+    form.post(route('staff.meeting-memos.store'), { 
+        forceFormData: true,
+        onError: () => {
+            form.meeting_date = originalDate;
+        }
+    });
+};
 </script>
 
 <template>
@@ -73,7 +88,11 @@ const submit = () => form.post(route('staff.meeting-memos.store'), { forceFormDa
                         </div>
                         <div>
                             <InputLabel for="meeting_date" value=" Date" />
-                            <TextInput id="meeting_date" type="datetime-local" class="mt-1 block w-full dark:text-gray-400" v-model="form.meeting_date" required />
+                            <DatePicker v-model="form.meeting_date" mode="dateTime" is24hr hide-time-header>
+                                <template #default="{ inputValue, inputEvents }">
+                                    <TextInput id="meeting_date" class="mt-1 block w-full dark:text-gray-400" :value="inputValue" v-on="inputEvents" />
+                                </template>
+                            </DatePicker>
                             <InputError class="mt-2" :message="form.errors.meeting_date" />
                         </div>
                         <div>

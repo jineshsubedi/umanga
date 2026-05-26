@@ -5,6 +5,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import RichTextEditor from '@/Components/RichTextEditor.vue';
+import { DatePicker } from 'v-calendar';
+import 'v-calendar/style.css';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
@@ -13,7 +15,7 @@ const props = defineProps({ memo: Object, managers: Array });
 const form = useForm({
     title: props.memo.title,
     content: props.memo.content,
-    meeting_date: props.memo.meeting_date ? new Date(props.memo.meeting_date).toISOString().slice(0, 16) : '',
+    meeting_date: props.memo.meeting_date ? new Date(props.memo.meeting_date) : new Date(),
     manager_ids: props.memo.managers?.map(m => m.id) || [],
     attachments: [],
     _method: 'put',
@@ -63,14 +65,26 @@ const deleteExistingAttachment = (attachment) => {
     }
 };
 
-const submit = () => form.post(route('staff.meeting-memos.update', props.memo.id), {
-    forceFormData: true,
-    preserveScroll: true,
-    onSuccess: () => {
-        form.attachments = [];
-        if (fileInput.value) fileInput.value.value = null;
-    },
-});
+const submit = () => {
+    let originalDate = form.meeting_date;
+    if (form.meeting_date instanceof Date) {
+        const d = form.meeting_date;
+        const pad = (n) => n.toString().padStart(2, '0');
+        form.meeting_date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    }
+
+    form.post(route('staff.meeting-memos.update', props.memo.id), {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            form.attachments = [];
+            if (fileInput.value) fileInput.value.value = null;
+        },
+        onError: () => {
+            form.meeting_date = originalDate;
+        }
+    });
+};
 </script>
 
 <template>
@@ -103,7 +117,11 @@ const submit = () => form.post(route('staff.meeting-memos.update', props.memo.id
                         </div>
                         <div>
                             <InputLabel for="meeting_date" value=" Date" />
-                            <TextInput id="meeting_date" type="datetime-local" class="mt-1 block w-full dark:text-gray-400" v-model="form.meeting_date" required />
+                            <DatePicker v-model="form.meeting_date" mode="dateTime" is24hr hide-time-header>
+                                <template #default="{ inputValue, inputEvents }">
+                                    <TextInput id="meeting_date" class="mt-1 block w-full dark:text-gray-400" :value="inputValue" v-on="inputEvents" />
+                                </template>
+                            </DatePicker>
                             <InputError class="mt-2" :message="form.errors.meeting_date" />
                         </div>
                         <div>

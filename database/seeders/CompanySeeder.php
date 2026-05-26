@@ -66,8 +66,8 @@ class CompanySeeder extends Seeder
                 ]);
             }
 
-            // Create  Memos
-            $statuses = ['draft', 'pending', 'approved', 'rejected'];
+            // Create Memos
+            $statuses = ['draft', 'pending_manager', 'pending_admin', 'approved', 'rejected'];
             foreach ($staffs as $staff) {
                 // Each staff creates 3 memos
                 for ($m = 1; $m <= 3; $m++) {
@@ -82,14 +82,32 @@ class CompanySeeder extends Seeder
                         'status' => $status,
                     ]);
 
-                    // Add a review if it's approved or rejected
-                    if ($status === 'approved' || $status === 'rejected') {
-                        $manager = $managers[array_rand($managers)];
+                    $manager = $managers[array_rand($managers)];
+
+                    // Add manager review if status passed pending_manager
+                    if (in_array($status, ['pending_admin', 'approved'])) {
                         MeetingMemoReview::create([
                             'meeting_memo_id' => $memo->id,
                             'reviewed_by' => $manager->id,
-                            'status' => $status,
-                            'comment' => "This memo has been $status by {$manager->name}.",
+                            'status' => 'approved',
+                            'comment' => "Approved by manager {$manager->name} and forwarded to admin.",
+                        ]);
+                    } elseif ($status === 'rejected') {
+                        MeetingMemoReview::create([
+                            'meeting_memo_id' => $memo->id,
+                            'reviewed_by' => $manager->id,
+                            'status' => 'rejected',
+                            'comment' => "Rejected by manager {$manager->name}.",
+                        ]);
+                    }
+
+                    // Add admin review if approved
+                    if ($status === 'approved') {
+                        MeetingMemoReview::create([
+                            'meeting_memo_id' => $memo->id,
+                            'reviewed_by' => $admin->id,
+                            'status' => 'approved',
+                            'comment' => "Final approval by admin {$admin->name}.",
                         ]);
                     }
                 }

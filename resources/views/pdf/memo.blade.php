@@ -79,14 +79,22 @@
         <p class="company">{{ $memo->company->name ?? 'Company Name' }}</p>
     </div>
 
-    <table class="meta-table">
+    <!-- <table class="meta-table">
         <tr>
-            <td class="meta-label">Title:</td>
-            <td>{{ $memo->title }}</td>
+            <td class="meta-label">To:</td>   
+            <td>The Managing Director</td>
         </tr>
         <tr>
-            <td class="meta-label">Submitted By:</td>   
+            <td class="meta-label">From:</td>   
             <td>{{ $memo->creator->name ?? 'N/A' }}</td>
+        </tr>
+        <tr>
+            <td class="meta-label">CC:</td>   
+            <td>{{ $memo->managers->pluck('name')->implode(', ') }}</td>
+        </tr>
+        <tr>
+            <td class="meta-label">Re:</td>
+            <td>{{ $memo->title }}</td>
         </tr>
         <tr>
             <td class="meta-label">Date:</td>
@@ -96,19 +104,45 @@
             <td class="meta-label">Status:</td>
             <td style="text-transform: capitalize;">{{ str_replace('_', ' ', $memo->status) }}</td>
         </tr>
-    </table>
-
-    <hr>
+    </table> -->
+    <!-- <span style="text-transform: capitalize;">{{ str_replace('_', ' ', $memo->status) }}</span>
+    <hr> -->
 
     <div class="content">
         {!! $memo->content !!}
     </div>
 
-    <div class="signatures">
+    <div class="signatures grid grid-cols-2 md:grid-cols-4 gap-4">
         @php
             $managerReview = $memo->reviews->where('status', 'approved')->first(); // Manager review
             $adminReview = $memo->reviews->where('status', 'approved')->last(); // If admin also approved, they're the last one
         @endphp
+
+        <div class="signature-box">
+            @if($memo->creator->signature_path)
+                @php
+                    $sigPath = storage_path('app/public/' . $memo->creator->signature_path);
+                    if(file_exists($sigPath)) {
+                        $type = pathinfo($sigPath, PATHINFO_EXTENSION);
+                        $data = file_get_contents($sigPath);
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    } else {
+                        $base64 = null;
+                    }
+                @endphp
+                @if($base64)
+                    <img src="{{ $base64 }}" class="signature-img" />
+                @else
+                    <div style="height: 80px;"></div>
+                @endif
+            @else
+                <div style="height: 80px;"></div>
+            @endif
+            <div class="signature-line"></div>
+            <div class="signature-role">Prepared By</div>
+            <div class="signature-name">{{ $memo->creator->name }}</div>
+            <div style="font-size: 11px;">{{ $memo->created_at->format('M d, Y h:i A') }}</div>
+        </div>
 
         @if($managerReview && $managerReview->reviewer)
         <div class="signature-box">
@@ -132,14 +166,42 @@
                 <div style="height: 80px;"></div>
             @endif
             <div class="signature-line"></div>
+            <div class="signature-role">Checked By</div>
             <div class="signature-name">{{ $managerReview->reviewer->name }}</div>
-            <div class="signature-role">Manager</div>
+            <div style="font-size: 11px;">{{ $managerReview->created_at->format('M d, Y h:i A') }}</div>
+        </div>
+        @endif
+
+        @if($managerReview && $managerReview->reviewer)
+        <div class="signature-box">
+            @if($managerReview->reviewer->signature_path)
+                @php
+                    $sigPath = storage_path('app/public/' . $managerReview->reviewer->signature_path);
+                    if(file_exists($sigPath)) {
+                        $type = pathinfo($sigPath, PATHINFO_EXTENSION);
+                        $data = file_get_contents($sigPath);
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    } else {
+                        $base64 = null;
+                    }
+                @endphp
+                @if($base64)
+                    <img src="{{ $base64 }}" class="signature-img" />
+                @else
+                    <div style="height: 80px;"></div>
+                @endif
+            @else
+                <div style="height: 80px;"></div>
+            @endif
+            <div class="signature-line"></div>
+            <div class="signature-role">Verified By</div>
+            <div class="signature-name">{{ $managerReview->reviewer->name }}</div>
             <div style="font-size: 11px;">{{ $managerReview->created_at->format('M d, Y h:i A') }}</div>
         </div>
         @endif
 
         @if($adminReview && $adminReview->reviewer && $adminReview->reviewer->id !== ($managerReview->reviewer->id ?? null))
-        <div class="signature-box" style="float: right;">
+        <div class="signature-box">
             @if($adminReview->reviewer->signature_path)
                 @php
                     $sigPath = storage_path('app/public/' . $adminReview->reviewer->signature_path);
@@ -160,8 +222,8 @@
                 <div style="height: 80px;"></div>
             @endif
             <div class="signature-line"></div>
+            <div class="signature-role">Approved By</div>
             <div class="signature-name">{{ $adminReview->reviewer->name }}</div>
-            <div class="signature-role">Admin</div>
             <div style="font-size: 11px;">{{ $adminReview->created_at->format('M d, Y h:i A') }}</div>
         </div>
         @endif

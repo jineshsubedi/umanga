@@ -80,6 +80,9 @@ class MeetingMemoController extends Controller
     {
         abort_if($meetingMemo->company_id !== auth()->user()->company_id, 403);
         abort_if(!$meetingMemo->managers()->where('manager_id', auth()->id())->exists(), 403, 'You are not assigned to this memo.');
+        if ($meetingMemo->status !== 'approved') {
+            abort(403, 'Only approved memos can be downloaded.');
+        }
         
         $meetingMemo->load(['creator', 'company', 'reviews.reviewer']);
         

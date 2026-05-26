@@ -76,6 +76,9 @@ class MeetingMemoController extends Controller
     public function downloadPdf(MeetingMemo $meetingMemo)
     {
         abort_if($meetingMemo->company_id !== auth()->user()->company_id, 403);
+        if ($meetingMemo->status !== 'approved') {
+            abort(403, 'Only approved memos can be downloaded.');
+        }
         
         $meetingMemo->load(['creator', 'company', 'reviews.reviewer']);
         

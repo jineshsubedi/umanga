@@ -94,6 +94,10 @@ class MeetingMemoController extends Controller
 
     public function downloadPdf(MeetingMemo $meetingMemo)
     {
+        if ($meetingMemo->status !== 'approved') {
+            abort(403, 'Only approved memos can be downloaded.');
+        }
+
         $meetingMemo->load(['creator', 'company', 'reviews.reviewer']);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.memo', ['memo' => $meetingMemo]);

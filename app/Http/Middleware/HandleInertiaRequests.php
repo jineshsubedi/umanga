@@ -48,13 +48,14 @@ class HandleInertiaRequests extends Middleware
             'app_settings' => $appSettings,
             'auth' => [
                 'user' => $request->user() ? [
-                    'id'         => $request->user()->id,
-                    'name'       => $request->user()->name,
-                    'email'      => $request->user()->email,
-                    'role'       => $request->user()->role,
+                    'id'             => $request->user()->id,
+                    'name'           => $request->user()->name,
+                    'email'          => $request->user()->email,
+                    'role'           => $request->user()->role,
+                    'designation'    => $request->user()->designation,
                     'signature_path' => $request->user()->signature_path ?? null,
-                    'company_id' => $request->user()->company_id,
-                    'company'    => $request->user()->company ? [
+                    'company_id'     => $request->user()->company_id,
+                    'company'        => $request->user()->company ? [
                         'name' => $request->user()->company->name,
                     ] : null,
                 ] : null,

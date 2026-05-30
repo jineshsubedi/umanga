@@ -31,19 +31,21 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
-            'role'     => 'required|in:manager,staff',
-            'password' => ['required', Rules\Password::defaults()],
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users',
+            'role'        => 'required|in:manager,staff',
+            'designation' => 'nullable|string|max:255',
+            'password'    => ['required', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'company_id' => auth()->user()->company_id,
-            'name'       => $request->name,
-            'email'      => $request->email,
-            'role'       => $request->role,
-            'password'   => Hash::make($request->password),
-            'status'     => 'active',
+            'company_id'  => auth()->user()->company_id,
+            'name'        => $request->name,
+            'email'       => $request->email,
+            'role'        => $request->role,
+            'designation' => $request->designation,
+            'password'    => Hash::make($request->password),
+            'status'      => 'active',
         ]);
 
         event(new Registered($user));
@@ -62,12 +64,13 @@ class UserController extends Controller
         abort_if($user->company_id !== auth()->user()->company_id, 403);
 
         $request->validate([
-            'name'   => 'required|string|max:255',
-            'role'   => 'required|in:manager,staff',
-            'status' => 'required|in:active,inactive',
+            'name'        => 'required|string|max:255',
+            'role'        => 'required|in:manager,staff',
+            'designation' => 'nullable|string|max:255',
+            'status'      => 'required|in:active,inactive',
         ]);
 
-        $user->update($request->only('name', 'role', 'status'));
+        $user->update($request->only('name', 'role', 'designation', 'status'));
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

@@ -22,6 +22,7 @@ const form = useForm({
     email: props.user.email || '',
     company_id: props.user.company_id || '',
     role: props.user.role || 'staff',
+    designation: props.user.designation || '',
     status: props.user.status || 'active',
 });
 
@@ -57,6 +58,12 @@ const submit = () => {
                             <InputLabel for="email" value="Email Address" />
                             <TextInput id="email" type="email" class="mt-1 block w-full dark:text-gray-100" v-model="form.email" required />
                             <InputError class="mt-2" :message="form.errors.email" />
+                        </div>
+
+                        <div>
+                            <InputLabel for="designation" value="Designation (Optional)" />
+                            <TextInput id="designation" type="text" class="mt-1 block w-full dark:text-gray-100" v-model="form.designation" />
+                            <InputError class="mt-2" :message="form.errors.designation" />
                         </div>
 
                         <div>

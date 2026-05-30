@@ -60,6 +60,7 @@ class UserController extends Controller
             'email'      => 'required|email|max:255|unique:users,email',
             'company_id' => 'required|exists:companies,id',
             'role'       => 'required|in:admin,manager,staff',
+            'designation'=> 'nullable|string|max:255',
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make('password');
@@ -154,6 +155,7 @@ class UserController extends Controller
             'email'      => 'required|email|max:255|unique:users,email,' . $user->id,
             'company_id' => 'required|exists:companies,id',
             'role'       => 'required|in:admin,manager,staff',
+            'designation'=> 'nullable|string|max:255',
             'status'     => 'required|in:active,inactive',
         ]);
 

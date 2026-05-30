@@ -9,9 +9,10 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const props = defineProps({ user: Object });
 
 const form = useForm({
-    name:   props.user.name,
-    role:   props.user.role,
-    status: props.user.status,
+    name:        props.user.name,
+    role:        props.user.role,
+    designation: props.user.designation,
+    status:      props.user.status,
 });
 
 const submit = () => form.put(route('admin.users.update', props.user.id));
@@ -57,6 +58,17 @@ const submit = () => form.put(route('admin.users.update', props.user.id));
                                 {{ user.email }}
                                 <span class="text-xs text-gray-400 ml-1">(cannot be changed here)</span>
                             </p>
+                        </div>
+
+                        <div>
+                            <InputLabel for="designation" value="Designation (Optional)" />
+                            <TextInput
+                                id="designation"
+                                type="text"
+                                class="mt-1 block w-full"
+                                v-model="form.designation"
+                            />
+                            <InputError class="mt-2" :message="form.errors.designation" />
                         </div>
 
                         <div>

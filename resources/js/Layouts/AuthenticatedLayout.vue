@@ -77,12 +77,25 @@ watch(() => flash.value?.error, (val) => {
     }
 }, { immediate: true });
 
-const roleBadge = computed(() => ({
-    super_admin: { label: 'Super Admin', cls: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
-    admin:       { label: 'Admin',       cls: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
-    manager:     { label: 'Manager',     cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
-    staff:      { label: 'Staff',      cls: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
-}[role.value] ?? { label: role.value, cls: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300' }));
+const roleBadge = computed(() => {
+    let label = role.value;
+    if (role.value === 'super_admin') label = 'Super Admin';
+    else if (role.value === 'admin') label = 'Admin';
+    else if (role.value === 'manager') label = 'Manager';
+    else if (role.value === 'staff') label = 'Staff';
+
+    if (role.value !== 'super_admin' && user.value?.designation) {
+        label = user.value.designation;
+    }
+
+    let cls = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    if (role.value === 'super_admin') cls = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+    else if (role.value === 'admin') cls = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    else if (role.value === 'manager') cls = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    else if (role.value === 'staff') cls = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+
+    return { label, cls };
+});
 
 const navigation = computed(() => {
     let nav = [];

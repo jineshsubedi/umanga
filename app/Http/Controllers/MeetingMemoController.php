@@ -29,7 +29,8 @@ class MeetingMemoController extends Controller
                 $q->where('created_by', $user->id)
                   ->orWhere('checker_id', $user->id)
                   ->orWhere('verifier_id', $user->id)
-                  ->orWhere('approver_id', $user->id);
+                  ->orWhere('approver_id', $user->id)
+                  ->orWhere('status', 'approved'); // Allow viewing approved memos
             });
 
         if ($status !== 'all') {
@@ -48,7 +49,8 @@ class MeetingMemoController extends Controller
                 $q->where('created_by', $user->id)
                   ->orWhere('checker_id', $user->id)
                   ->orWhere('verifier_id', $user->id)
-                  ->orWhere('approver_id', $user->id);
+                  ->orWhere('approver_id', $user->id)
+                  ->orWhere('status', 'approved');
             });
 
         $counts = [
@@ -120,11 +122,11 @@ class MeetingMemoController extends Controller
         $user = auth()->user();
         abort_if($memo->company_id !== $user->company_id, 403);
         
-        // Can view if creator, checker, verifier, or approver
-        abort_if(
-            !in_array($user->id, [$memo->created_by, $memo->checker_id, $memo->verifier_id, $memo->approver_id]),
-            403
-        );
+        // Can view if creator, checker, verifier, approver, or if it's approved
+        $canView = in_array($user->id, [$memo->created_by, $memo->checker_id, $memo->verifier_id, $memo->approver_id])
+                   || $memo->status === 'approved';
+                   
+        abort_unless($canView, 403);
 
         $memo->load(['creator:id,name', 'reviews.reviewer:id,name', 'attachments', 'checker:id,name', 'verifier:id,name', 'approver:id,name']);
 

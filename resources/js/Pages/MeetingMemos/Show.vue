@@ -120,10 +120,10 @@ const stepLabel = (s) => ({
                         <div class="flex-1 flex flex-col items-center gap-1">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
                                 :class="{
-                                    'bg-green-100 text-green-700': ['pending_approver','approved'].includes(memo.status),
-                                    'bg-orange-100 text-orange-700 ring-2 ring-orange-400': memo.status === 'pending_verifier',
-                                    'bg-gray-100 text-gray-400': ['draft','pending_checker'].includes(memo.status),
-                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.verifier_id && r.status === 'rejected'),
+                                    'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft',
+                                    'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400': memo.status === 'pending_checker',
+                                    'bg-gray-100 text-gray-400': memo.status === 'draft',
+                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.checker_id && r.status === 'rejected'),
                                 }">
                                 {{ memo.verifier?.name?.charAt(0) }}
                             </div>
@@ -228,10 +228,10 @@ const stepLabel = (s) => ({
                     <h3 class="font-semibold text-gray-800 dark:text-gray-200 mb-4">Review History</h3>
                     <div class="space-y-3">
                         <div v-for="review in memo.reviews" :key="review.id"
-                            class="flex gap-3 p-3 rounded-lg"
-                            :class="review.status === 'approved' ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'">
+                            class="flex gap-3 p-3 rounded-lg dark:bg-gray-900"
+                            :class="review.status === 'approved' ? 'bg-green-50 border border-green-100 dark:border-green-700' : 'bg-red-50 border border-red-100 dark:border-red-700'">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                                :class="review.status === 'approved' ? 'bg-green-500' : 'bg-red-500'">
+                                :class="review.status === 'approved' ? 'bg-green-500 dark:bg-green-700' : 'bg-red-500 dark:bg-red-700'">
                                 {{ review.reviewer?.name?.charAt(0) }}
                             </div>
                             <div>
@@ -239,7 +239,7 @@ const stepLabel = (s) => ({
                                     {{ review.reviewer?.name }}
                                     <span class="font-semibold capitalize ml-1" :class="review.status === 'approved' ? 'text-green-700' : 'text-red-700'">{{ review.status }}</span>
                                 </p>
-                                <p v-if="review.comment" class="text-sm text-gray-600 mt-1">{{ review.comment }}</p>
+                                <p v-if="review.comment" class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ review.comment }}</p>
                             </div>
                         </div>
                     </div>

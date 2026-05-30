@@ -40,7 +40,7 @@ class MeetingMemoController extends Controller
             }
         }
 
-        $memos = $query->latest()->get();
+        $memos = $query->latest()->paginate(5)->withQueryString();
 
         // Calculate counts based on user's relation to memos
         $baseQuery = MeetingMemo::where('company_id', $user->company_id)

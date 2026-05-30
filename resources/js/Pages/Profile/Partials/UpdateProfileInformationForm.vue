@@ -94,7 +94,7 @@ const updateProfileInformation = () => {
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
-            <div v-if="['manager', 'admin'].includes(user.role)">
+            <div v-if="['staff', 'manager', 'admin'].includes(user.role)">
                 <InputLabel for="signature" value="Signature (For Memo Approval)" />
 
                 <input

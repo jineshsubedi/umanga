@@ -63,6 +63,8 @@ class MeetingMemoController extends Controller
 
     public function create()
     {
+        abort_if(auth()->user()->role !== 'staff', 403, 'Only staff members can create memos.');
+
         $users = User::where('company_id', auth()->user()->company_id)
             ->where('status', 'active')
             ->where('id', '!=', auth()->id())
@@ -74,6 +76,8 @@ class MeetingMemoController extends Controller
 
     public function store(Request $request)
     {
+        abort_if(auth()->user()->role !== 'staff', 403, 'Only staff members can create memos.');
+
         $request->validate([
             'title'        => 'required|string|max:255',
             'content'      => 'required|string',

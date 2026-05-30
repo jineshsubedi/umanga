@@ -4,7 +4,7 @@ import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 const props = defineProps({ 
-    memos: Array, 
+    memos: Object, 
     counts: Object, 
     status: String,
     companies: Array,
@@ -104,7 +104,7 @@ const tabs = ['all', 'pending', 'approved', 'rejected'];
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
-                            <tr v-for="memo in memos" :key="memo.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                            <tr v-for="memo in memos.data" :key="memo.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="font-medium text-gray-900 dark:text-gray-100">{{ memo.title }}</div>
                                 </td>
@@ -124,11 +124,21 @@ const tabs = ['all', 'pending', 'approved', 'rejected'];
                                     </Link>
                                 </td>
                             </tr>
-                            <tr v-if="memos.length === 0">
+                            <tr v-if="memos.data.length === 0">
                                 <td colspan="6" class="px-6 py-12 text-center text-gray-400">No {{ status === 'all' ? '' : status }} memos found.</td>
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div v-if="memos.links && memos.links.length > 3" class="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-center gap-1">
+                        <template v-for="(link, p) in memos.links" :key="p">
+                            <div v-if="link.url === null" class="px-4 py-2 text-sm text-gray-500 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md" v-html="link.label"></div>
+                            <Link v-else :href="link.url" class="px-4 py-2 text-sm border rounded-md transition-colors"
+                                :class="link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                v-html="link.label"></Link>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>

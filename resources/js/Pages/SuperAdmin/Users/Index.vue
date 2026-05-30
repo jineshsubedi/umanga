@@ -167,7 +167,7 @@ const destroy = (user) => {
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">User</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Company</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Role</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Designation / Role</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Memos</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Actions</th>
@@ -190,14 +190,17 @@ const destroy = (user) => {
                                     {{ user.company?.name || 'No Company' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
-                                        :class="{
-                                            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
-                                            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': user.role === 'manager',
-                                            'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'staff'
-                                        }">
-                                        {{ user.role }}
-                                    </span>
+                                    <div class="flex flex-col gap-1">
+                                        <span v-if="user.designation" class="text-sm font-medium text-gray-900 dark:text-white">{{ user.designation }}</span>
+                                        <span class="inline-flex w-fit px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
+                                            :class="{
+                                                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
+                                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': user.role === 'manager',
+                                                'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': user.role === 'staff'
+                                            }">
+                                            {{ user.role }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span v-if="user.role === 'staff'" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">

@@ -20,7 +20,9 @@ class DashboardController extends Controller
         $totalStaffs = User::where('company_id', $companyId)->where('role', 'staff')->count();
         
         $totalMemos = MeetingMemo::where('company_id', $companyId)->count();
-        $pendingMemos = MeetingMemo::where('company_id', $companyId)->where('status', 'pending')->count();
+        $pendingMemos = MeetingMemo::where('company_id', $companyId)
+            ->whereIn('status', ['pending_checker', 'pending_verifier', 'pending_approver'])
+            ->count();
         $approvedMemos = MeetingMemo::where('company_id', $companyId)->where('status', 'approved')->count();
 
         // Recent Activity

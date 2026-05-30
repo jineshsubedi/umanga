@@ -18,6 +18,7 @@ const form = useForm({
     email: '',
     company_id: '',
     role: 'staff',
+    designation: '',
 });
 
 const submit = () => {
@@ -52,6 +53,12 @@ const submit = () => {
                             <InputLabel for="email" value="Email Address" />
                             <TextInput id="email" type="email" class="mt-1 block w-full dark:text-gray-100" v-model="form.email" required />
                             <InputError class="mt-2" :message="form.errors.email" />
+                        </div>
+
+                        <div>
+                            <InputLabel for="designation" value="Designation (Optional)" />
+                            <TextInput id="designation" type="text" class="mt-1 block w-full dark:text-gray-100" v-model="form.designation" />
+                            <InputError class="mt-2" :message="form.errors.designation" />
                         </div>
 
                         <div>

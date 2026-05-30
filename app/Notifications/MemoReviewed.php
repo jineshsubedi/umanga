@@ -27,12 +27,12 @@ class MemoReviewed extends Notification
         $verb = $this->status === 'approved' ? 'approved' : 'rejected';
         return [
             'type'         => 'memo_reviewed',
-            'message'      => "{$this->reviewerName} {$verb} your memo \"{$this->memo->title}\"",
+            'message'      => "{$this->reviewerName} {$verb} the memo \"{$this->memo->title}\"",
             'memo_id'    => $this->memo->id,
             'memo_title' => $this->memo->title,
             'status'       => $this->status,
             'comment'      => $this->comment,
-            'url'          => '/staff/meeting-memos/' . $this->memo->id,
+            'url'          => '/memos/' . $this->memo->id,
             'actor_name'   => $this->reviewerName,
         ];
     }

@@ -6,9 +6,8 @@ use App\Http\Controllers\SuperAdmin\CompanyController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Manager\MeetingMemoController as ManagerMeetingMemoController;
+use App\Http\Controllers\MeetingMemoController;
 use App\Http\Controllers\SuperAdmin\MeetingMemoController as SuperAdminMeetingMemoController;
-use App\Http\Controllers\Staff\MeetingMemoController as StaffMeetingMemoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,10 +45,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
 });
 
-// ─── Attendance (all authenticated non-superadmin users) ────────────────────
+// ─── Attendance & Memos (all authenticated non-superadmin users) ────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/attendance/clock-in',  [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
     Route::post('/attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
+
+    Route::resource('memos', MeetingMemoController::class);
+    Route::post('/memos/{memo}/submit', [MeetingMemoController::class, 'submit'])->name('memos.submit');
+    Route::post('/memos/{memo}/review', [MeetingMemoController::class, 'review'])->name('memos.review');
+    Route::post('/memos/{memo}/duplicate', [MeetingMemoController::class, 'duplicate'])->name('memos.duplicate');
+    Route::get('/memos/{memo}/pdf', [MeetingMemoController::class, 'downloadPdf'])->name('memos.pdf');
+    Route::delete('/memos/attachments/{attachment}', [\App\Http\Controllers\Staff\AttachmentController::class, 'destroy'])->name('memos.attachments.destroy');
 });
 
 // ─── Super Admin ─────────────────────────────────────────────────────────────
@@ -91,10 +97,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::get('/meeting-memos', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'index'])->name('meeting-memos.index');
-        Route::get('/meeting-memos/{meetingMemo}', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'show'])->name('meeting-memos.show');
-        Route::post('/meeting-memos/{meetingMemo}/review', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'review'])->name('meeting-memos.review');
-        Route::get('/meeting-memos/{meetingMemo}/pdf', [\App\Http\Controllers\Admin\MeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
         Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
     });
@@ -104,10 +106,6 @@ Route::middleware(['auth', 'verified', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
-        Route::get('/meeting-memos', [ManagerMeetingMemoController::class, 'index'])->name('meeting-memos.index');
-        Route::get('/meeting-memos/{meetingMemo}', [ManagerMeetingMemoController::class, 'show'])->name('meeting-memos.show');
-        Route::post('/meeting-memos/{meetingMemo}/review', [ManagerMeetingMemoController::class, 'review'])->name('meeting-memos.review');
-        Route::get('/meeting-memos/{meetingMemo}/pdf', [ManagerMeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/attendance', [\App\Http\Controllers\Manager\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
@@ -116,16 +114,6 @@ Route::middleware(['auth', 'verified', 'role:staff'])
     ->prefix('staff')
     ->name('staff.')
     ->group(function () {
-        Route::get('/meeting-memos', [StaffMeetingMemoController::class, 'index'])->name('meeting-memos.index');
-        Route::get('/meeting-memos/create', [StaffMeetingMemoController::class, 'create'])->name('meeting-memos.create');
-        Route::post('/meeting-memos', [StaffMeetingMemoController::class, 'store'])->name('meeting-memos.store');
-        Route::get('/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'show'])->name('meeting-memos.show');
-        Route::get('/meeting-memos/{meetingMemo}/edit', [StaffMeetingMemoController::class, 'edit'])->name('meeting-memos.edit');
-        Route::match(['put', 'post'], '/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'update'])->name('meeting-memos.update');
-        Route::delete('/meeting-memos/{meetingMemo}', [StaffMeetingMemoController::class, 'destroy'])->name('meeting-memos.destroy');
-        Route::post('/meeting-memos/{meetingMemo}/submit', [StaffMeetingMemoController::class, 'submit'])->name('meeting-memos.submit');
-        Route::post('/meeting-memos/{meetingMemo}/duplicate', [StaffMeetingMemoController::class, 'duplicate'])->name('meeting-memos.duplicate');
-        Route::delete('/meeting-memos/attachments/{attachment}', [\App\Http\Controllers\Staff\AttachmentController::class, 'destroy'])->name('meeting-memos.attachments.destroy');
         Route::get('/attendance', [\App\Http\Controllers\Staff\AttendanceController::class, 'index'])->name('attendance.index');
     });
 

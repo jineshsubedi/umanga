@@ -6,7 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-const form = useForm({ name: '', email: '', role: 'staff', password: '' });
+const form = useForm({ name: '', email: '', role: 'staff', designation: '', password: '' });
 const submit = () => form.post(route('admin.users.store'));
 </script>
 
@@ -37,8 +37,14 @@ const submit = () => form.post(route('admin.users.store'));
                             <InputError class="mt-2" :message="form.errors.email" />
                         </div>
                         <div>
+                            <InputLabel for="designation" value="Designation (Optional)" />
+                            <TextInput id="designation" type="text" class="mt-1 block w-full" v-model="form.designation" />
+                            <InputError class="mt-2" :message="form.errors.designation" />
+                        </div>
+                        <div>
                             <InputLabel for="role" value="Assign Role" />
                             <select id="role" v-model="form.role" class="mt-1 block w-full border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
                                 <option value="staff">Staff</option>
                             </select>

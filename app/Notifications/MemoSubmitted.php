@@ -20,12 +20,12 @@ class MemoSubmitted extends Notification
     public function toDatabase($notifiable): array
     {
         return [
-            'type'         => 'memo_submitted',
-            'message'      => "{$this->memo->creator->name} submitted \"{$this->memo->title}\" for review",
+            'type'       => 'memo_submitted',
+            'message'    => "{$this->memo->creator->name} submitted the memo \"{$this->memo->title}\" for review",
             'memo_id'    => $this->memo->id,
             'memo_title' => $this->memo->title,
-            'url'          => '/manager/meeting-memos/' . $this->memo->id,
-            'actor_name'   => $this->memo->creator->name,
+            'url'        => '/memos/' . $this->memo->id,
+            'actor_name' => $this->memo->creator->name,
         ];
     }
 }

@@ -20,11 +20,11 @@ class MeetingMemoController extends Controller
         $approver_id = $request->query('approver_id', '');
 
         $query = MeetingMemo::where('status', '!=', 'draft')
-            ->with(['creator:id,name', 'company:id,name', 'latestReview.reviewer:id,name']);
+            ->with(['creator:id,name', 'company:id,name', 'latestReview.reviewer:id,name', 'checker:id,name', 'verifier:id,name', 'approver:id,name']);
 
         if ($status !== 'all') {
             if ($status === 'pending') {
-                $query->whereIn('status', ['pending_manager', 'pending_admin']);
+                $query->whereIn('status', ['pending_checker', 'pending_verifier', 'pending_approver']);
             } else {
                 $query->where('status', $status);
             }
@@ -64,7 +64,7 @@ class MeetingMemoController extends Controller
 
         $counts = [
             'all'      => (clone $countsQuery)->count(),
-            'pending'  => (clone $countsQuery)->whereIn('status', ['pending_manager', 'pending_admin'])->count(),
+            'pending'  => (clone $countsQuery)->whereIn('status', ['pending_checker', 'pending_verifier', 'pending_approver'])->count(),
             'approved' => (clone $countsQuery)->where('status', 'approved')->count(),
             'rejected' => (clone $countsQuery)->where('status', 'rejected')->count(),
         ];
@@ -87,7 +87,7 @@ class MeetingMemoController extends Controller
 
     public function show(MeetingMemo $meetingMemo)
     {
-        $meetingMemo->load(['creator:id,name', 'company:id,name', 'reviews.reviewer:id,name', 'attachments']);
+        $meetingMemo->load(['creator:id,name', 'company:id,name', 'reviews.reviewer:id,name', 'attachments', 'checker:id,name', 'verifier:id,name', 'approver:id,name']);
 
         return Inertia::render('SuperAdmin/MeetingMemos/Show', ['memo' => $meetingMemo]);
     }

@@ -44,6 +44,7 @@ const submit = () => form.post(route('admin.users.store'));
                         <div>
                             <InputLabel for="role" value="Assign Role" />
                             <select id="role" v-model="form.role" class="mt-1 block w-full border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
                                 <option value="staff">Staff</option>
                             </select>

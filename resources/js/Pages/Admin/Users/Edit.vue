@@ -78,6 +78,7 @@ const submit = () => form.put(route('admin.users.update', props.user.id));
                                 v-model="form.role"
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                             >
+                                <option value="admin">Admin</option>
                                 <option value="manager">Manager</option>
                                 <option value="staff">Staff</option>
                             </select>

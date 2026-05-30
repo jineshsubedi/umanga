@@ -102,7 +102,7 @@ const navigation = computed(() => {
     if (role.value === 'admin') {
         nav.push({ name: 'Dashboard', href: route('admin.dashboard'), current: route().current('admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
-        nav.push({ name: ' Memos', href: route('admin.meeting-memos.index'), current: route().current('admin.meeting-memos.*'), icon: 'document' });
+        nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
         nav.push({ name: 'Attendance', href: route('admin.attendance.index'), current: route().current('admin.attendance.index'), icon: 'clock' });
         nav.push({ name: 'Calendar', href: route('admin.calendar.index'), current: route().current('admin.calendar.*'), icon: 'calendar' });
     }
@@ -115,11 +115,11 @@ const navigation = computed(() => {
         // nav.push({ name: 'Calendar', href: route('super-admin.attendance.index'), current: route().current('super-admin.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'manager') {
-        nav.push({ name: ' Memos', href: route('manager.meeting-memos.index'), current: route().current('manager.meeting-memos.*'), icon: 'document' });
+        nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
         nav.push({ name: 'Calendar', href: route('manager.attendance.index'), current: route().current('manager.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'staff') {
-        nav.push({ name: 'My Memos', href: route('staff.meeting-memos.index'), current: route().current('staff.meeting-memos.*'), icon: 'document' });
+        nav.push({ name: 'My Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
         nav.push({ name: 'Calendar', href: route('staff.attendance.index'), current: route().current('staff.attendance.*'), icon: 'clock' });
     }
     return nav;

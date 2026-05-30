@@ -114,8 +114,9 @@
 
     <div class="signatures">
         @php
-            $managerReview = $memo->reviews->where('status', 'approved')->first(); // Manager review
-            $adminReview = $memo->reviews->where('status', 'approved')->last(); // If admin also approved, they're the last one
+            $checkerReview = $memo->reviews->where('reviewed_by', $memo->checker_id)->where('status', 'approved')->first();
+            $verifierReview = $memo->reviews->where('reviewed_by', $memo->verifier_id)->where('status', 'approved')->first();
+            $approverReview = $memo->reviews->where('reviewed_by', $memo->approver_id)->where('status', 'approved')->first();
         @endphp
 
         <div class="signature-box">
@@ -141,15 +142,15 @@
             @endif
             <div class="signature-line"></div>
             <div class="signature-name">{{ $memo->creator->name }}</div>
-            <div style="font-size: 11px;">{{ $memo->created_at->format('M d, Y h:i A') }}</div>
+            <!-- <div style="font-size: 11px;">{{ $memo->created_at->format('M d, Y h:i A') }}</div> -->
         </div>
 
-        @if($managerReview && $managerReview->reviewer)
+        @if($checkerReview && $memo->checker)
         <div class="signature-box">
             <div class="signature-role">Checked By</div>
-            @if($managerReview->reviewer->signature_path)
+            @if($memo->checker->signature_path)
                 @php
-                    $sigPath = storage_path('app/public/' . $managerReview->reviewer->signature_path);
+                    $sigPath = storage_path('app/public/' . $memo->checker->signature_path);
                     if(file_exists($sigPath)) {
                         $type = pathinfo($sigPath, PATHINFO_EXTENSION);
                         $data = file_get_contents($sigPath);
@@ -167,17 +168,17 @@
                 <div style="height: 80px;"></div>
             @endif
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $managerReview->reviewer->name }}</div>
-            <div style="font-size: 11px;">{{ $managerReview->created_at->format('M d, Y h:i A') }}</div>
+            <div class="signature-name">{{ $memo->checker->name }}</div>
+            <!-- <div style="font-size: 11px;">{{ $checkerReview->created_at->format('M d, Y h:i A') }}</div> -->
         </div>
         @endif
 
-        @if($managerReview && $managerReview->reviewer)
+        @if($verifierReview && $memo->verifier)
         <div class="signature-box">
             <div class="signature-role">Verified By</div>
-            @if($managerReview->reviewer->signature_path)
+            @if($memo->verifier->signature_path)
                 @php
-                    $sigPath = storage_path('app/public/' . $managerReview->reviewer->signature_path);
+                    $sigPath = storage_path('app/public/' . $memo->verifier->signature_path);
                     if(file_exists($sigPath)) {
                         $type = pathinfo($sigPath, PATHINFO_EXTENSION);
                         $data = file_get_contents($sigPath);
@@ -195,17 +196,17 @@
                 <div style="height: 80px;"></div>
             @endif
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $managerReview->reviewer->name }}</div>
-            <div style="font-size: 11px;">{{ $managerReview->created_at->format('M d, Y h:i A') }}</div>
+            <div class="signature-name">{{ $memo->verifier->name }}</div>
+            <!-- <div style="font-size: 11px;">{{ $verifierReview->created_at->format('M d, Y h:i A') }}</div> -->
         </div>
         @endif
 
-        @if($adminReview && $adminReview->reviewer && $adminReview->reviewer->id !== ($managerReview->reviewer->id ?? null))
+        @if($approverReview && $memo->approver)
         <div class="signature-box">
             <div class="signature-role">Approved By</div>
-            @if($adminReview->reviewer->signature_path)
+            @if($memo->approver->signature_path)
                 @php
-                    $sigPath = storage_path('app/public/' . $adminReview->reviewer->signature_path);
+                    $sigPath = storage_path('app/public/' . $memo->approver->signature_path);
                     if(file_exists($sigPath)) {
                         $type = pathinfo($sigPath, PATHINFO_EXTENSION);
                         $data = file_get_contents($sigPath);
@@ -223,8 +224,8 @@
                 <div style="height: 80px;"></div>
             @endif
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $adminReview->reviewer->name }}</div>
-            <div style="font-size: 11px;">{{ $adminReview->created_at->format('M d, Y h:i A') }}</div>
+            <div class="signature-name">{{ $memo->approver->name }}</div>
+            <!-- <div style="font-size: 11px;">{{ $approverReview->created_at->format('M d, Y h:i A') }}</div> -->
         </div>
         @endif
     </div>

@@ -18,7 +18,7 @@ class ReportController extends Controller
         $role = $user->role;
 
         // Only super_admin, admin, manager can access
-        abort_unless(in_array($role, ['super_admin', 'admin', 'manager']), 403);
+        abort_unless(in_array($role, ['super_admin', 'admin']), 403);
 
         $companies = [];
         $users = [];
@@ -34,6 +34,21 @@ class ReportController extends Controller
                 ->select('id', 'name')
                 ->get();
         }
+        $memocreators = User::whereIn('role', ['staff'])
+                ->select('id', 'name', 'company_id')
+                ->get();
+        $memoverifers = User::whereIn('role', ['manager'])
+                ->select('id', 'name', 'company_id')
+                ->get();
+
+        $memoapprovers = User::whereIn('role', ['admin'])
+                ->select('id', 'name', 'company_id')
+                ->get();
+        if ($role !== 'super_admin') {
+            $memocreators = $memocreators->where('company_id', $user->company_id);
+            $memoverifers = $memoverifers->where('company_id', $user->company_id);
+            $memoapprovers = $memoapprovers->where('company_id', $user->company_id);
+        }
 
         // Determine the correct export route
         $exportUrl = $role === 'super_admin'
@@ -41,10 +56,13 @@ class ReportController extends Controller
             : route('reports.export');
 
         return Inertia::render('Reports/Index', [
-            'companies'    => $companies,
-            'users'        => $users,
-            'isSuperAdmin' => $role === 'super_admin',
-            'exportUrl'    => $exportUrl,
+            'companies'     => $companies,
+            'users'         => $users,
+            'memocreators'  => $memocreators,
+            'memoverifers'  => $memoverifers,
+            'memoapprovers' => $memoapprovers,
+            'isSuperAdmin'  => $role === 'super_admin',
+            'exportUrl'     => $exportUrl,
         ]);
     }
 
@@ -60,10 +78,13 @@ class ReportController extends Controller
             'company_id' => 'nullable|integer|exists:companies,id',
             'date_from'  => 'nullable|date',
             'date_to'    => 'nullable|date|after_or_equal:date_from',
-            'created_by' => 'nullable|integer|exists:users,id',
+            'created_by'    => 'nullable|integer|exists:users,id',
+            'memocreators'  => 'nullable|integer|exists:users,id',
+            'memoverifers'  => 'nullable|integer|exists:users,id',
+            'memoapprovers' => 'nullable|integer|exists:users,id',
         ]);
 
-        $filters = $request->only(['status', 'company_id', 'date_from', 'date_to', 'created_by']);
+        $filters = $request->only(['status', 'company_id', 'date_from', 'date_to', 'created_by', 'memocreators', 'memoverifers', 'memoapprovers']);
 
         // Enforce company scope for non-super-admin
         if ($role !== 'super_admin') {

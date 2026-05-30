@@ -6,6 +6,9 @@ import { ref, computed } from 'vue';
 const props = defineProps({
     companies: Array,
     users: Array,
+    memocreators: Array,
+    memoverifers: Array,
+    memoapprovers: Array,
     isSuperAdmin: Boolean,
     exportUrl: String,
 });
@@ -15,6 +18,9 @@ const form = useForm({
     company_id: '',
     date_from: '',
     date_to: '',
+    memocreators: '',
+    memoverifers: '',
+    memoapprovers: '',
     created_by: '',
 });
 
@@ -26,6 +32,24 @@ const filteredUsers = computed(() => {
     }
     return props.users;
 });
+const filteredMemocreators = computed(() => {
+    if (props.isSuperAdmin && form.company_id) {
+        return props.memocreators.filter(u => u.company_id == form.company_id);
+    }
+    return props.memocreators;
+});
+const filteredMemoverifers = computed(() => {
+    if (props.isSuperAdmin && form.company_id) {
+        return props.memoverifers.filter(u => u.company_id == form.company_id);
+    }
+    return props.memoverifers;
+});
+const filteredMemoapprovers = computed(() => {
+    if (props.isSuperAdmin && form.company_id) {
+        return props.memoapprovers.filter(u => u.company_id == form.company_id);
+    }
+    return props.memoapprovers;
+});
 
 const generateReport = () => {
     isExporting.value = true;
@@ -36,6 +60,9 @@ const generateReport = () => {
     if (form.date_from) params.append('date_from', form.date_from);
     if (form.date_to) params.append('date_to', form.date_to);
     if (form.created_by) params.append('created_by', form.created_by);
+    if (form.memocreators) params.append('memocreators', form.memocreators);
+    if (form.memoverifers) params.append('memoverifers', form.memoverifers);
+    if (form.memoapprovers) params.append('memoapprovers', form.memoapprovers);
 
     const url = props.exportUrl + '?' + params.toString();
 
@@ -57,6 +84,9 @@ const resetFilters = () => {
     form.company_id = '';
     form.date_from = '';
     form.date_to = '';
+    form.memocreators = '';
+    form.memoverifers = '';
+    form.memoapprovers = '';
     form.created_by = '';
 };
 
@@ -140,14 +170,30 @@ const statuses = [
                             </div>
                         </div>
 
-                        <!-- Row 3: Created By -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <!-- Row 3: Users -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Created By</label>
-                                <select v-model="form.created_by"
+                                <select v-model="form.memocreators"
                                     class="w-full text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
                                     <option value="">All Users</option>
-                                    <option v-for="u in filteredUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
+                                    <option v-for="u in filteredMemocreators" :key="u.id" :value="u.id">{{ u.name }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Memo Checkers/Verifiers</label>
+                                <select v-model="form.memoverifers"
+                                    class="w-full text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                                    <option value="">All Users</option>
+                                    <option v-for="u in filteredMemoverifers" :key="u.id" :value="u.id">{{ u.name }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Memo Approvers</label>
+                                <select v-model="form.memoapprovers"
+                                    class="w-full text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                                    <option value="">All Users</option>
+                                    <option v-for="u in filteredMemoapprovers" :key="u.id" :value="u.id">{{ u.name }}</option>
                                 </select>
                             </div>
                         </div>

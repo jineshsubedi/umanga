@@ -47,6 +47,22 @@ class MemoExport implements FromQuery, WithHeadings, WithMapping, WithStyles, Sh
             $query->where('created_by', $this->filters['created_by']);
         }
 
+        if (!empty($this->filters['memocreators'])) {
+            $query->where('created_by', $this->filters['memocreators']);
+        }
+
+        if (!empty($this->filters['memoverifers'])) {
+            // Usually managers check/verify. We can filter by both checker_id or verifier_id, or just verifier_id.
+            $query->where(function($q) {
+                $q->where('checker_id', $this->filters['memoverifers'])
+                  ->orWhere('verifier_id', $this->filters['memoverifers']);
+            });
+        }
+
+        if (!empty($this->filters['memoapprovers'])) {
+            $query->where('approver_id', $this->filters['memoapprovers']);
+        }
+
         return $query->latest();
     }
 
@@ -57,7 +73,7 @@ class MemoExport implements FromQuery, WithHeadings, WithMapping, WithStyles, Sh
             'Company',
             'Title',
             'Created By',
-            'Meeting Date',
+            'Memo Date',
             'Status',
             'Checked By',
             'Verified By',

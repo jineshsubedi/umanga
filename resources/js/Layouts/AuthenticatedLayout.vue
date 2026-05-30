@@ -118,7 +118,7 @@ const navigation = computed(() => {
     }
     if (role.value === 'manager') {
         nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
-        nav.push({ name: 'Reports', href: route('reports.index'), current: route().current('reports.*'), icon: 'chart' });
+        // nav.push({ name: 'Reports', href: route('reports.index'), current: route().current('reports.*'), icon: 'chart' });
         nav.push({ name: 'Calendar', href: route('manager.attendance.index'), current: route().current('manager.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'staff') {

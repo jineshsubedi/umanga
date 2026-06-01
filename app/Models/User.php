@@ -14,6 +14,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'company_id', 'name', 'email', 'password', 'role', 'designation', 'status', 'signature_path',
+        'email_notifications', 'database_notifications',
     ];
 
     protected $hidden = [
@@ -23,6 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'email_notifications' => 'boolean',
+        'database_notifications' => 'boolean',
     ];
 
     public function company()
@@ -49,4 +52,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool      { return $this->role === 'admin'; }
     public function isManager(): bool    { return $this->role === 'manager'; }
     public function isStaff(): bool     { return $this->role === 'staff'; }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \App\Notifications\QueuedVerifyEmail);
+    }
 }

@@ -68,4 +68,19 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Update the user's notification preferences.
+     */
+    public function updatePreferences(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'email_notifications' => ['required', 'boolean'],
+            'database_notifications' => ['required', 'boolean'],
+        ]);
+        
+        $request->user()->update($validated);
+        
+        return Redirect::route('profile.edit')->with('status', 'preferences-updated');
+    }
 }

@@ -4,9 +4,11 @@ namespace App\Notifications;
 
 use App\Models\MeetingMemo;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MemoSubmitted extends Notification
+class MemoSubmitted extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -14,7 +16,23 @@ class MemoSubmitted extends Notification
 
     public function via($notifiable): array
     {
-        return ['database'];
+        $channels = [];
+        if ($notifiable->database_notifications) {
+            $channels[] = 'database';
+        }
+        if ($notifiable->email_notifications) {
+            $channels[] = 'mail';
+        }
+        return $channels;
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Memo Submitted for Review')
+            ->line("{$this->memo->creator->name} submitted the memo \"{$this->memo->title}\" for review.")
+            ->action('View Memo', url('/memos/' . $this->memo->id))
+            ->line('Thank you for using our application!');
     }
 
     public function toDatabase($notifiable): array

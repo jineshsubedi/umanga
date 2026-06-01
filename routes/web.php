@@ -7,6 +7,7 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\MeetingMemoController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuperAdmin\MeetingMemoController as SuperAdminMeetingMemoController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -56,6 +58,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/memos/{memo}/duplicate', [MeetingMemoController::class, 'duplicate'])->name('memos.duplicate');
     Route::get('/memos/{memo}/pdf', [MeetingMemoController::class, 'downloadPdf'])->name('memos.pdf');
     Route::delete('/memos/attachments/{attachment}', [\App\Http\Controllers\Staff\AttachmentController::class, 'destroy'])->name('memos.attachments.destroy');
+
+    // Reports (admin + manager)
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 });
 
 // ─── Super Admin ─────────────────────────────────────────────────────────────
@@ -87,6 +93,8 @@ Route::middleware(['auth', 'role:super_admin'])
         Route::get('/meeting-memos/{meetingMemo}/pdf', [SuperAdminMeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
         Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────

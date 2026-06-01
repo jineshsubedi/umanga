@@ -39,4 +39,8 @@ RUN mkdir -p /home/$user/.composer && \
 # Set working directory
 WORKDIR /var/www
 
+# Install Supervisor
+RUN apt-get update && apt-get install -y supervisor
+RUN mkdir -p /var/log/supervisor
+
 USER $user

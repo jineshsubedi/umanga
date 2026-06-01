@@ -51,6 +51,24 @@ services:
     networks:
       - laravel
 
+  # supervisor
+  supervisor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: jinesh
+        uid: 1000
+    container_name: supervisor-umng
+    restart: "no"
+    user: jinesh
+    command: [ "/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf" ]
+    volumes:
+      - ./:/var/www
+      - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+    networks:
+      - laravel
+
   # Mailpit Service
   mailpit:
     image: axllent/mailpit

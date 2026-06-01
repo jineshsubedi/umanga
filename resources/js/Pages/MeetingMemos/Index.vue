@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-const props = defineProps({ memos: Array, counts: Object, status: String });
+const props = defineProps({ memos: Object, counts: Object, status: String });
 const page = usePage();
 
 const statusBadge = (s) => ({
@@ -71,7 +71,7 @@ const tabs = computed(() => [
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         New Memo
                     </Link>
-                    <div v-for="memo in memos" :key="memo.id"
+                    <div v-for="memo in memos.data" :key="memo.id"
                         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex-1 min-w-0">
@@ -138,10 +138,20 @@ const tabs = computed(() => [
                         </div>
                     </div>
 
-                    <div v-if="memos.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <div v-if="memos.data.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
                         <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         <p class="text-gray-500 mb-3">No memos found.</p>
-                        <Link :href="route('memos.create')" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Create a memo →</Link>
+                        <Link v-if="page.props.auth.user.role === 'staff'" :href="route('memos.create')" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Create a memo →</Link>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div v-if="memos.links && memos.links.length > 3" class="mt-6 flex justify-center gap-1">
+                        <template v-for="(link, p) in memos.links" :key="p">
+                            <div v-if="link.url === null" class="px-4 py-2 text-sm text-gray-500 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md" v-html="link.label"></div>
+                            <Link v-else :href="link.url" class="px-4 py-2 text-sm border rounded-md transition-colors"
+                                :class="link.active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                v-html="link.label"></Link>
+                        </template>
                     </div>
                 </div>
             </div>

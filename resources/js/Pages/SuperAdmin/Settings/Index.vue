@@ -9,11 +9,25 @@ import { ref } from 'vue';
 
 const props = defineProps({
     app_name: String,
+    mail_host: String,
+    mail_port: String,
+    mail_username: String,
+    mail_password: String,
+    mail_encryption: String,
+    mail_from_address: String,
+    mail_from_name: String,
 });
 
 const form = useForm({
     app_name: props.app_name,
     app_logo: null,
+    mail_host: props.mail_host,
+    mail_port: props.mail_port,
+    mail_username: props.mail_username,
+    mail_password: props.mail_password,
+    mail_encryption: props.mail_encryption,
+    mail_from_address: props.mail_from_address,
+    mail_from_name: props.mail_from_name,
 });
 
 const logoPreview = ref(null);
@@ -86,6 +100,54 @@ const submit = () => {
                                     />
                                 </div>
                                 <InputError class="mt-2" :message="form.errors.app_logo" />
+                            </div>
+
+                            <hr class="border-gray-200 dark:border-gray-700 my-6" />
+                            
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Mail Configuration (Admin Settings)</h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <InputLabel for="mail_host" value="Mail Host" />
+                                    <TextInput id="mail_host" type="text" class="mt-1 block w-full" v-model="form.mail_host" />
+                                    <InputError class="mt-2" :message="form.errors.mail_host" />
+                                </div>
+
+                                <div>
+                                    <InputLabel for="mail_port" value="Mail Port" />
+                                    <TextInput id="mail_port" type="text" class="mt-1 block w-full" v-model="form.mail_port" />
+                                    <InputError class="mt-2" :message="form.errors.mail_port" />
+                                </div>
+
+                                <div>
+                                    <InputLabel for="mail_username" value="Mail Username" />
+                                    <TextInput id="mail_username" type="text" class="mt-1 block w-full" v-model="form.mail_username" />
+                                    <InputError class="mt-2" :message="form.errors.mail_username" />
+                                </div>
+
+                                <div>
+                                    <InputLabel for="mail_password" value="Mail Password" />
+                                    <TextInput id="mail_password" type="password" class="mt-1 block w-full" v-model="form.mail_password" />
+                                    <InputError class="mt-2" :message="form.errors.mail_password" />
+                                </div>
+
+                                <div>
+                                    <InputLabel for="mail_encryption" value="Mail Encryption (tls/ssl)" />
+                                    <TextInput id="mail_encryption" type="text" class="mt-1 block w-full" v-model="form.mail_encryption" />
+                                    <InputError class="mt-2" :message="form.errors.mail_encryption" />
+                                </div>
+
+                                <div>
+                                    <InputLabel for="mail_from_address" value="Mail From Address" />
+                                    <TextInput id="mail_from_address" type="email" class="mt-1 block w-full" v-model="form.mail_from_address" />
+                                    <InputError class="mt-2" :message="form.errors.mail_from_address" />
+                                </div>
+
+                                <div class="sm:col-span-2">
+                                    <InputLabel for="mail_from_name" value="Mail From Name" />
+                                    <TextInput id="mail_from_name" type="text" class="mt-1 block w-full" v-model="form.mail_from_name" />
+                                    <InputError class="mt-2" :message="form.errors.mail_from_name" />
+                                </div>
                             </div>
 
                             <div class="flex items-center gap-4">

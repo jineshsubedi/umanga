@@ -2,7 +2,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
@@ -13,53 +12,71 @@ const submit = () => form.post(route('admin.users.store'));
 <template>
     <Head title="Create User" />
     <AuthenticatedLayout>
-        <template #header>
-            <div class="flex items-center gap-3">
-                <Link :href="route('admin.users.index')" class="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-600">
+        <!-- Hero Strip -->
+        <div class="bg-gradient-to-br from-[#3b0e77] via-[#5b14b8] to-[#2c0b5c] pt-8 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <div class="absolute inset-0 pointer-events-none">
+                <div class="absolute -top-1/4 -right-1/4 w-96 h-96 rounded-full bg-purple-400/20 blur-3xl animate-pulse"></div>
+            </div>
+            <div class="max-w-2xl mx-auto relative z-10 flex items-center gap-4">
+                <Link :href="route('admin.users.index')" class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </Link>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-400">Create New User</h2>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">Create User</h1>
+                    <p class="mt-1 text-purple-200 text-sm">Add a new user to your company.</p>
+                </div>
             </div>
-        </template>
+        </div>
 
-        <div class="py-8">
+        <div class="py-8 -mt-12 relative z-10">
             <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
-                    <form @submit.prevent="submit" class="space-y-5">
-                        <div>
-                            <InputLabel for="name" value="Full Name" />
-                            <TextInput id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus />
-                            <InputError class="mt-2" :message="form.errors.name" />
-                        </div>
-                        <div>
-                            <InputLabel for="email" value="Email Address" />
-                            <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required />
-                            <InputError class="mt-2" :message="form.errors.email" />
-                        </div>
-                        <div>
-                            <InputLabel for="designation" value="Designation (Optional)" />
-                            <TextInput id="designation" type="text" class="mt-1 block w-full" v-model="form.designation" />
-                            <InputError class="mt-2" :message="form.errors.designation" />
-                        </div>
-                        <div>
-                            <InputLabel for="role" value="Assign Role" />
-                            <select id="role" v-model="form.role" class="mt-1 block w-full border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="admin">Admin</option>
-                                <option value="manager">Manager</option>
-                                <option value="staff">Staff</option>
-                            </select>
-                            <InputError class="mt-2" :message="form.errors.role" />
-                        </div>
-                        <div>
-                            <InputLabel for="password" value="Password" />
-                            <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password" required />
-                            <InputError class="mt-2" :message="form.errors.password" />
-                        </div>
-                        <div class="flex items-center justify-end gap-3 pt-2">
-                            <Link :href="route('admin.users.index')" class="text-sm text-gray-600 hover:text-gray-900">Cancel</Link>
-                            <PrimaryButton :disabled="form.processing">Create User</PrimaryButton>
-                        </div>
-                    </form>
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="w-2 h-5 bg-[#7c3aed] rounded-full"></span>
+                            User Information
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <form @submit.prevent="submit" class="space-y-5">
+                            <div>
+                                <InputLabel for="name" value="Full Name" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                <TextInput id="name" type="text" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.name" required autofocus />
+                                <InputError class="mt-2" :message="form.errors.name" />
+                            </div>
+                            <div>
+                                <InputLabel for="email" value="Email Address" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                <TextInput id="email" type="email" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.email" required />
+                                <InputError class="mt-2" :message="form.errors.email" />
+                            </div>
+                            <div>
+                                <InputLabel for="designation" value="Designation (Optional)" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                <TextInput id="designation" type="text" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.designation" />
+                                <InputError class="mt-2" :message="form.errors.designation" />
+                            </div>
+                            <div>
+                                <InputLabel for="role" value="Assign Role" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                <select id="role" v-model="form.role" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3">
+                                    <option value="admin">Admin</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="staff">Staff</option>
+                                </select>
+                                <InputError class="mt-2" :message="form.errors.role" />
+                            </div>
+                            <div>
+                                <InputLabel for="password" value="Password" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                <TextInput id="password" type="password" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.password" required />
+                                <InputError class="mt-2" :message="form.errors.password" />
+                            </div>
+                            <div class="flex items-center justify-end gap-3 pt-4">
+                                <Link :href="route('admin.users.index')" class="text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Cancel</Link>
+                                <button type="submit" :disabled="form.processing"
+                                    class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#7c3aed] to-[#b026ff] text-white text-sm font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+                                    Create User
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

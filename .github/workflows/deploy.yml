@@ -1,0 +1,49 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.PROJECT_PATH }}
+            
+            # Pull latest changes from production branch
+            git fetch origin
+            git checkout production
+            git reset --hard origin/production
+            
+            # Generate .env file from secret
+            echo "${{ secrets.ENV_PRODUCTION }}" | base64 --decode > .env
+            
+            # Restart containers and build new images if necessary
+            docker compose up -d --build
+            
+            # Install PHP dependencies
+            docker exec laravel-app-umng composer install --optimize-autoloader --no-dev
+            
+            # Install Node dependencies and build assets (if applicable)
+            docker exec laravel-app-umng npm ci
+            docker exec laravel-app-umng npm run build
+            
+            # Run database migrations
+            docker exec laravel-app-umng php artisan migrate --force
+            
+            # Cache configurations and routes
+            docker exec laravel-app-umng php artisan optimize
+            
+            # Restart supervisor to pick up any changes
+            docker compose restart supervisor
+            
+            echo "Deployment completed successfully!"

@@ -3,7 +3,6 @@ import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
@@ -37,15 +36,26 @@ const submit = () => {
             {{ status }}
         </div>
 
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Welcome back</h2>
+        <div class="flex flex-col items-center text-center mb-10">
+            <!-- Centralized Welcome Back Pill -->
+            <div class="mb-6">
+                <Link href="/">
+                    <div class="inline-block bg-purple-600 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-md hover:bg-purple-700 transition-colors">
+                        Welcome back
+                    </div>
+                </Link>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-[#7c3aed] dark:text-[#a78bfa]">Login your account</h2>
+        </div>
 
-        <form @submit.prevent="submit" class="space-y-5">
+        <form @submit.prevent="submit" class="space-y-6">
             <div>
-                <InputLabel for="email" value="Email" class="dark:text-gray-300" />
+                <InputLabel for="email" value="Email / Username" class="text-gray-600 dark:text-gray-300 font-medium" />
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    class="mt-2 block w-full bg-gray-50 border-gray-300 text-gray-900 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-800 dark:border-gray-700 dark:text-white px-4 py-3 transition-colors"
                     v-model="form.email"
                     required
                     autofocus
@@ -55,11 +65,11 @@ const submit = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="Password" class="dark:text-gray-300" />
+                <InputLabel for="password" value="Password" class="text-gray-600 dark:text-gray-300 font-medium" />
                 <TextInput
                     id="password"
                     type="password"
-                    class="mt-1 block w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    class="mt-2 block w-full bg-gray-50 border-gray-300 text-gray-900 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-800 dark:border-gray-700 dark:text-white px-4 py-3 transition-colors"
                     v-model="form.password"
                     required
                     autocomplete="current-password"
@@ -68,27 +78,32 @@ const submit = () => {
             </div>
 
             <div class="flex items-center justify-between">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" class="dark:bg-gray-800 dark:border-gray-700" />
-                    <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
+                <label class="flex items-center group cursor-pointer">
+                    <Checkbox name="remember" v-model:checked="form.remember" class="text-[#7c3aed] focus:ring-[#7c3aed] dark:bg-gray-800 dark:border-gray-700" />
+                    <span class="ms-2 text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Remember me</span>
                 </label>
+            </div>
 
+            <div class="pt-4">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-sm text-sm font-bold text-white bg-[#b026ff] hover:bg-[#9a1ce6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#b026ff] transition-all transform hover:scale-[1.02]"
+                    :class="{ 'opacity-50 cursor-not-allowed': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Login
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center space-y-4 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    class="text-sm font-medium text-gray-500 hover:text-[#7c3aed] dark:text-gray-400 dark:hover:text-[#a78bfa] transition-colors"
                 >
-                    Forgot password?
+                    Forgot Password?
                 </Link>
             </div>
-
-            <div>
-                <PrimaryButton class="w-full justify-center" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </PrimaryButton>
-            </div>
-
-
         </form>
     </GuestLayout>
 </template>

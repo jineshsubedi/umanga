@@ -1,0 +1,128 @@
+# CI/CD Pipeline Implementation Plan
+
+This plan outlines the creation of a complete CI/CD pipeline using GitHub Actions to automatically deploy your Laravel Docker application when code is pushed to the `production` branch.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Deployment Target & Hosting Environment**
+> The proposed plan assumes you are deploying to a standard Virtual Private Server (VPS) (e.g., DigitalOcean Droplet, AWS EC2, Hetzner, etc.) via SSH. 
+> 
+> **Are you deploying to a VPS via SSH, or are you using a managed service like Laravel Forge, Envoyer, or AWS ECS?** Please confirm your hosting setup so I can tailor the deployment script accurately.
+
+> [!WARNING]
+> **Environment Variables Strategy**
+> Since this is a Dockerized Laravel app, how do you want to handle the production `.env` file?
+> 1. **Option A (Recommended for VPS):** You manually create and maintain the `.env` file directly on the production server. The CI/CD pipeline simply pulls the code and restarts the containers.
+> 2. **Option B (Fully Automated):** You store all production environment variables as GitHub Secrets, and the CI/CD pipeline generates the `.env` file on the server during each deployment.
+> 
+> *The proposed plan currently assumes Option B, as it allows full control of environment variables from GitHub.*
+
+## Proposed Changes
+
+### 1. GitHub Actions Workflow
+
+#### [NEW] `.github/workflows/deploy.yml`
+I will create a GitHub Actions workflow file that triggers on a push to the `production` branch. The workflow will:
+1. Connect to your production server via SSH using secrets.
+2. Navigate to your project directory.
+3. Pull the latest code from the `production` branch (`git pull origin production`).
+4. Generate the `.env` file from a base64 encoded GitHub secret to handle environment variables securely.
+5. Rebuild the Docker containers if necessary (`docker compose up -d --build`).
+6. Install fresh composer dependencies inside the container (`docker exec laravel-app-umng composer install --optimize-autoloader --no-dev`).
+7. Run database migrations (`docker exec laravel-app-umng php artisan migrate --force`).
+8. Clear and cache configurations/routes (`docker exec laravel-app-umng php artisan optimize`).
+
+### 2. Required GitHub Secrets
+To make this work securely, you will need to configure the following secrets in your GitHub repository (`Settings > Secrets and variables > Actions`):
+- `SSH_HOST`: The IP address of your production server.
+- `SSH_USERNAME`: The SSH user (e.g., `root`, `ubuntu`, `jinesh`).
+- `SSH_PRIVATE_KEY`: The private SSH key used to connect to your server.
+- `PROJECT_PATH`: The absolute path to your project on the server (e.g., `/var/www/umng`).
+- `ENV_PRODUCTION`: The base64-encoded string of your production `.env` file.
+
+## Verification Plan
+1. I will write the `.github/workflows/deploy.yml` file and commit it locally.
+2. You will review the generated file, set up the corresponding secrets in your GitHub repository, and push the code to trigger it.
+3. We can observe the Actions tab in GitHub to ensure the deployment succeeds.
+
+
+=========================================
+# walkthrough
+# CI/CD Pipeline Setup
+
+I have successfully created the GitHub Actions workflow to automate the deployment of your application to your VPS whenever code is pushed to the `production` branch.
+
+## What Was Done
+
+- Created the deployment script at `.github/workflows/deploy.yml`.
+- Configured the pipeline to:
+  1. SSH into your VPS.
+  2. Pull the latest code from the `production` branch.
+  3. Generate the production `.env` file from a base64 encoded GitHub secret to ensure sensitive variables are secure.
+  4. Build and restart Docker containers as needed.
+  5. Run `composer install`, `npm build`, and apply database migrations.
+  6. Optimize caches and restart the `supervisor` container to pick up any changes.
+
+## Next Steps for You
+
+To make this pipeline functional, you need to add the following **Repository Secrets** to your GitHub repository by going to **Settings > Secrets and variables > Actions**:
+
+| Secret Name | Description | Example |
+| :--- | :--- | :--- |
+| `SSH_HOST` | The IP address or hostname of your VPS. | `192.168.1.1` |
+| `SSH_USERNAME` | The SSH username to log in with. | `root` or `jinesh` |
+| `SSH_PRIVATE_KEY` | Your private SSH key (usually from `~/.ssh/id_rsa` or similar). | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+| `PROJECT_PATH` | The absolute path to your project on the server. | `/var/www/umng` |
+| `ENV_PRODUCTION` | The base64-encoded string of your production `.env` file. | (See below) |
+
+> [!TIP]
+> To easily generate the base64 string for the `ENV_PRODUCTION` secret, you can run the following command on your server or local machine:
+> ```bash
+> base64 -w 0 .env
+> ```
+> Copy the output and paste it directly as the secret's value.
+
+Once these secrets are set, any push or merge into the `production` branch will trigger a seamless automated deployment!
+
+
+# Custom Nepali Calendar Redesign
+
+This plan outlines the redesign of the calendar interface to feature a custom, full-page Bikram Sambat (Nepali) calendar grid as per the provided reference image.
+
+## Proposed Changes
+
+### 1. Dependencies
+- **Install `nepali-date`**: Add this lightweight package to handle B.S. (Bikram Sambat) to A.D. (Gregorian) date conversions, determining the correct number of days per Nepali month, and extracting localized labels.
+
+### 2. New Component: `NepaliCalendarGrid.vue`
+We will create a new, reusable Vue component at `resources/js/Components/NepaliCalendarGrid.vue`. This component will:
+- Generate a 7-column CSS grid.
+- Map Nepali dates (e.g. Jestha 2083) to English dates.
+- Display large Nepali numerals in the center of each cell and small English dates in the bottom-right corner.
+- Highlight Saturdays and specific holidays with red text as per the reference UI.
+- Take a `records` or `attendances`/`memos` prop to map backend data to specific dates on the grid.
+
+### 3. Role-Specific Information Display
+Inside the calendar cells, the information displayed will vary depending on the active user role:
+- **Admin**: For each day, aggregate counts of total attendances will be displayed (e.g., "12 Present, 3 Absent"). Memos scheduled for that day will also be shown as a small list or badge.
+- **Manager / Staff**: Only the user's specific attendance status (e.g., "Present", "Clock-in time") and their relevant memos will be shown inside the day's cell.
+
+### 4. Replace `v-calendar` Integration
+We will update the following pages to remove the existing `v-calendar` plugin and insert the new `NepaliCalendarGrid` component:
+- `resources/js/Pages/Admin/Calendar/Index.vue`
+- `resources/js/Pages/Manager/Attendance/Index.vue`
+- `resources/js/Pages/Staff/Attendance/Index.vue`
+
+## User Review Required
+
+> [!WARNING]
+> Because `v-calendar` is being replaced here, do you want to keep `v-calendar` around for the *Date Pickers* in the Memo Create/Edit forms, or should we eventually replace those with a Nepali Date picker as well? (For now, we will leave the Memo Create/Edit forms alone and focus solely on the full-page grid calendar).
+
+> [!IMPORTANT]
+> The backend currently sends data (like attendances and memos) using the English date `YYYY-MM-DD`. Our custom calendar component will take care of mapping those English dates into their corresponding Nepali dates dynamically on the frontend. Do you approve this frontend mapping approach, or would you prefer the backend to convert them before sending? (Frontend mapping is usually much faster).
+
+## Verification Plan
+1. Ensure the npm dependency installs correctly and doesn't conflict.
+2. Verify the 7-day layout lines up properly (e.g., Baishakh 1st falls on the correct day of the week).
+3. Confirm that attendance counts appear in Admin view, but personal status appears in Staff/Manager views.

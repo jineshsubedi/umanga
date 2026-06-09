@@ -50,7 +50,7 @@ onMounted(() => {
                         {{ $page.props.app_settings?.app_name || 'UMNG Portal' }}
                     </h1>
                     <p class="text-white/80 text-xs leading-relaxed mb-6">
-                        Memos for the modern workplace.
+                        HRIS for the modern workplace.
                     </p>
                 </div>
             </div>

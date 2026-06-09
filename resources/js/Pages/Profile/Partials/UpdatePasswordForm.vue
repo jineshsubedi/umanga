@@ -18,7 +18,11 @@ const form = useForm({
 const updatePassword = () => {
     form.put(route('password.update'), {
         preserveScroll: true,
-        onSuccess: () => form.reset(),
+        // onSuccess: () => form.reset(),
+        onSuccess: () => {
+            form.reset();
+            showSuccessToast('Password updated successfully');
+        },
         onError: () => {
             if (form.errors.password) {
                 form.reset('password', 'password_confirmation');

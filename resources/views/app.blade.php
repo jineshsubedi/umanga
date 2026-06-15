@@ -6,6 +6,17 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- PWA Configuration -->
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#1e3a5f">
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js');
+                });
+            }
+        </script>
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

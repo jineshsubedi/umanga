@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You are offline</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+        }
+        .offline-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .offline-message h1 {
+            font-size: 24px;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+        .offline-message p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        #game-container {
+            width: 600px;
+            height: 150px;
+            border-bottom: 1px solid #535353;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+        }
+        #dino {
+            width: 40px;
+            height: 40px;
+            background-color: #535353;
+            position: absolute;
+            top: 110px;
+            left: 50px;
+        }
+        .cactus {
+            width: 20px;
+            height: 40px;
+            background-color: #535353;
+            position: absolute;
+            top: 110px;
+            right: 0px;
+            animation: moveCactus 1.5s infinite linear;
+        }
+        @keyframes moveCactus {
+            0% { right: -20px; }
+            100% { right: 620px; }
+        }
+        .jump {
+            animation: jump 0.5s ease;
+        }
+        @keyframes jump {
+            0% { top: 110px; }
+            40% { top: 30px; }
+            50% { top: 30px; }
+            60% { top: 30px; }
+            100% { top: 110px; }
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: monospace;
+            color: #535353;
+        }
+        .controls {
+            margin-top: 20px;
+            color: #888;
+            font-size: 14px;
+        }
+        @media (max-width: 650px) {
+            #game-container {
+                width: 90vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-message">
+        <h1>No internet connection</h1>
+        <p>Try playing a game while you wait.</p>
+    </div>
+
+    <div id="game-container">
+        <div id="dino"></div>
+        <div id="score">00000</div>
+    </div>
+    
+    <div class="controls">Press Space or Tap to Jump</div>
+
+    <script>
+        const dino = document.getElementById('dino');
+        const gameContainer = document.getElementById('game-container');
+        const scoreElement = document.getElementById('score');
+        
+        let isJumping = false;
+        let isGameOver = false;
+        let score = 0;
+        let spawnTimer;
+        let checkTimer;
+
+        function jump() {
+            if (!isJumping && !isGameOver) {
+                isJumping = true;
+                dino.classList.add('jump');
+                setTimeout(() => {
+                    dino.classList.remove('jump');
+                    isJumping = false;
+                }, 500);
+            } else if (isGameOver) {
+                restartGame();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                jump();
+            }
+        });
+        document.addEventListener('touchstart', jump);
+        document.addEventListener('mousedown', jump);
+
+        function spawnCactus() {
+            if (isGameOver) return;
+            
+            const cactus = document.createElement('div');
+            cactus.classList.add('cactus');
+            
+            // Randomly speed up animation a bit over time
+            const duration = Math.max(0.8, 1.5 - (score * 0.001));
+            cactus.style.animationDuration = duration + 's';
+            
+            gameContainer.appendChild(cactus);
+            
+            setTimeout(() => {
+                if (!isGameOver && cactus.parentNode) {
+                    cactus.remove();
+                }
+            }, duration * 1000);
+            
+            const nextSpawn = Math.random() * 1000 + 1000;
+            spawnTimer = setTimeout(spawnCactus, nextSpawn);
+        }
+
+        function checkCollision() {
+            if (isGameOver) return;
+            
+            const dinoRect = dino.getBoundingClientRect();
+            const cacti = document.querySelectorAll('.cactus');
+            
+            cacti.forEach(cactus => {
+                const cactusRect = cactus.getBoundingClientRect();
+                
+                if (
+                    dinoRect.right - 5 > cactusRect.left &&
+                    dinoRect.left + 5 < cactusRect.right &&
+                    dinoRect.bottom > cactusRect.top + 5
+                ) {
+                    gameOver();
+                }
+            });
+            
+            score++;
+            scoreElement.innerText = score.toString().padStart(5, '0');
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            clearTimeout(spawnTimer);
+            clearInterval(checkTimer);
+            
+            const cacti = document.querySelectorAll('.cactus');
+            cacti.forEach(cactus => {
+                cactus.style.animationPlayState = 'paused';
+            });
+            
+            dino.style.backgroundColor = 'red';
+        }
+
+        function restartGame() {
+            isGameOver = false;
+            score = 0;
+            dino.style.backgroundColor = '#535353';
+            
+            const cacti = document.querySelectorAll('.cactus');
+            cacti.forEach(cactus => cactus.remove());
+            
+            spawnTimer = setTimeout(spawnCactus, 1000);
+            checkTimer = setInterval(checkCollision, 50);
+        }
+
+        restartGame();
+    </script>
+</body>
+</html>

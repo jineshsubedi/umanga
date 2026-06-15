@@ -25,11 +25,11 @@ Route::get('/', function () {
 
 // Dashboard — redirects based on role
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'password.change.required'])
     ->name('dashboard');
 
 // Profile
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'password.change.required'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences.update');
@@ -37,13 +37,13 @@ Route::middleware('auth')->group(function () {
 });
 
 // Notifications
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'password.change.required'])->group(function () {
     Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
 });
 
 // ─── Attendance & Memos (all authenticated non-superadmin users) ────────────────────
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'password.change.required'])->group(function () {
     Route::post('/attendance/clock-in',  [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
     Route::post('/attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
 
@@ -60,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ─── Super Admin ─────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:super_admin'])
+Route::middleware(['auth', 'password.change.required', 'role:super_admin'])
     ->prefix('super-admin')
     ->name('super-admin.')
     ->group(function () {
@@ -93,7 +93,7 @@ Route::middleware(['auth', 'role:super_admin'])
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:admin'])
+Route::middleware(['auth', 'verified', 'password.change.required', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -105,7 +105,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     });
 
 // ─── Manager ─────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:manager'])
+Route::middleware(['auth', 'verified', 'password.change.required', 'role:manager'])
     ->prefix('manager')
     ->name('manager.')
     ->group(function () {
@@ -113,11 +113,16 @@ Route::middleware(['auth', 'verified', 'role:manager'])
     });
 
 // ─── Staff ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:staff'])
+Route::middleware(['auth', 'verified', 'password.change.required', 'role:staff'])
     ->prefix('staff')
     ->name('staff.')
     ->group(function () {
         Route::get('/attendance', [\App\Http\Controllers\Staff\AttendanceController::class, 'index'])->name('attendance.index');
     });
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/force-password-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'show'])->name('password.force-change');
+    Route::post('/force-password-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'store'])->name('password.force-change.store');
+});
 
 require __DIR__.'/auth.php';

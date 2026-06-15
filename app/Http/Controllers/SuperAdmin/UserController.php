@@ -66,7 +66,9 @@ class UserController extends Controller
         $validated['password'] = \Illuminate\Support\Facades\Hash::make('password');
         $validated['status'] = 'active';
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        event(new \Illuminate\Auth\Events\Registered($user));
 
         return redirect()->route('super-admin.users.index')
             ->with('success', 'User created successfully.');

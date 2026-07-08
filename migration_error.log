@@ -1,0 +1,132 @@
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[HY000] [2002] php_network_getaddresses: getaddrinfo for db failed: Try again (Connection: mysql, SQL: select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name)
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:829
+    825▕                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826▕                 );
+    827▕             }
+    828▕ 
+  ➜ 829▕             throw new QueryException(
+    830▕                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831▕             );
+    832▕         }
+    833▕     }
+
+  1   vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:65
+      PDOException::("PDO::__construct(): php_network_getaddresses: getaddrinfo for db failed: Try again")
+
+  2   vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:65
+      PDO::__construct("mysql:host=db;port=3306;dbname=enterprise", "root", Object(SensitiveParameterValue), [])
+
+  3   vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:83
+      Illuminate\Database\Connectors\Connector::createPdoConnection("mysql:host=db;port=3306;dbname=enterprise", "root", "root", [])
+
+  4   vendor/laravel/framework/src/Illuminate/Database/Connectors/Connector.php:48
+      Illuminate\Database\Connectors\Connector::tryAgainIfCausedByLostConnection(Object(PDOException), "mysql:host=db;port=3306;dbname=enterprise", "root", "root", [])
+
+  5   vendor/laravel/framework/src/Illuminate/Database/Connectors/MySqlConnector.php:24
+      Illuminate\Database\Connectors\Connector::createConnection("mysql:host=db;port=3306;dbname=enterprise", [])
+
+  6   vendor/laravel/framework/src/Illuminate/Database/Connectors/ConnectionFactory.php:184
+      Illuminate\Database\Connectors\MySqlConnector::connect()
+
+  7   vendor/laravel/framework/src/Illuminate/Database/Connection.php:1339
+      Illuminate\Database\Connectors\ConnectionFactory::{closure:Illuminate\Database\Connectors\ConnectionFactory::createPdoResolverWithHosts():179}()
+  8   vendor/laravel/framework/src/Illuminate/Database/Connection.php:1339
+
+  9   vendor/laravel/framework/src/Illuminate/Database/Connection.php:528
+      Illuminate\Database\Connection::getPdo()
+
+  10  vendor/laravel/framework/src/Illuminate/Database/Connection.php:423
+      Illuminate\Database\Connection::getPdoForSelect()
+
+  11  vendor/laravel/framework/src/Illuminate/Database/Connection.php:816
+      Illuminate\Database\Connection::{closure:Illuminate\Database\Connection::select():414}("select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [])
+
+  12  vendor/laravel/framework/src/Illuminate/Database/Connection.php:983
+      Illuminate\Database\Connection::runQueryCallback("select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [], Object(Closure))
+
+  13  vendor/laravel/framework/src/Illuminate/Database/Connection.php:962
+      Illuminate\Database\Connection::tryAgainIfCausedByLostConnection(Object(Illuminate\Database\QueryException), "select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [], Object(Closure))
+
+  14  vendor/laravel/framework/src/Illuminate/Database/Connection.php:785
+      Illuminate\Database\Connection::handleQueryException(Object(Illuminate\Database\QueryException), "select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [], Object(Closure))
+
+  15  vendor/laravel/framework/src/Illuminate/Database/Connection.php:414
+      Illuminate\Database\Connection::run("select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [], Object(Closure))
+
+  16  vendor/laravel/framework/src/Illuminate/Database/Connection.php:401
+      Illuminate\Database\Connection::select("select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name", [])
+
+  17  vendor/laravel/framework/src/Illuminate/Database/Schema/MySqlBuilder.php:41
+      Illuminate\Database\Connection::selectFromWriteConnection("select table_name as `name`, (data_length + index_length) as `size`, table_comment as `comment`, engine as `engine`, table_collation as `collation` from information_schema.tables where table_schema = 'enterprise' and table_type in ('BASE TABLE', 'SYSTEM VERSIONED') order by table_name")
+
+  18  vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php:165
+      Illuminate\Database\Schema\MySqlBuilder::getTables()
+
+  19  vendor/laravel/framework/src/Illuminate/Database/Migrations/DatabaseMigrationRepository.php:184
+      Illuminate\Database\Schema\Builder::hasTable("migrations")
+
+  20  vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:727
+      Illuminate\Database\Migrations\DatabaseMigrationRepository::repositoryExists()
+
+  21  vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:140
+      Illuminate\Database\Migrations\Migrator::repositoryExists()
+
+  22  vendor/laravel/framework/src/Illuminate/Support/helpers.php:261
+      Illuminate\Database\Console\Migrations\MigrateCommand::{closure:Illuminate\Database\Console\Migrations\MigrateCommand::repositoryExists():140}()
+  23  vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:140
+
+  24  vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:116
+      Illuminate\Database\Console\Migrations\MigrateCommand::repositoryExists()
+
+  25  vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:84
+      Illuminate\Database\Console\Migrations\MigrateCommand::prepareDatabase()
+
+  26  vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php:641
+      Illuminate\Database\Console\Migrations\MigrateCommand::{closure:Illuminate\Database\Console\Migrations\MigrateCommand::handle():83}()
+
+  27  vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php:83
+      Illuminate\Database\Migrations\Migrator::usingConnection(Object(Closure))
+
+  28  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:36
+      Illuminate\Database\Console\Migrations\MigrateCommand::handle()
+
+  29  vendor/laravel/framework/src/Illuminate/Container/Util.php:41
+      Illuminate\Container\BoundMethod::{closure:Illuminate\Container\BoundMethod::call():35}()
+
+  30  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:93
+      Illuminate\Container\Util::unwrapIfClosure(Object(Closure))
+
+  31  vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php:35
+      Illuminate\Container\BoundMethod::callBoundMethod(Object(Illuminate\Foundation\Application), Object(Closure))
+
+  32  vendor/laravel/framework/src/Illuminate/Container/Container.php:662
+      Illuminate\Container\BoundMethod::call(Object(Illuminate\Foundation\Application), [])
+
+  33  vendor/laravel/framework/src/Illuminate/Console/Command.php:211
+      Illuminate\Container\Container::call()
+
+  34  vendor/symfony/console/Command/Command.php:326
+      Illuminate\Console\Command::execute(Object(Symfony\Component\Console\Input\ArgvInput), Object(Illuminate\Console\OutputStyle))
+
+  35  vendor/laravel/framework/src/Illuminate/Console/Command.php:180
+      Symfony\Component\Console\Command\Command::run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Illuminate\Console\OutputStyle))
+
+  36  vendor/symfony/console/Application.php:1121
+      Illuminate\Console\Command::run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+
+  37  vendor/symfony/console/Application.php:324
+      Symfony\Component\Console\Application::doRunCommand(Object(Illuminate\Database\Console\Migrations\MigrateCommand), Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+
+  38  vendor/symfony/console/Application.php:175
+      Symfony\Component\Console\Application::doRun(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+
+  39  vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php:201
+      Symfony\Component\Console\Application::run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+
+  40  artisan:35
+      Illuminate\Foundation\Console\Kernel::handle(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+

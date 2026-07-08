@@ -15,6 +15,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'company_id', 'name', 'email', 'password', 'role', 'designation', 'status', 'signature_path',
         'email_notifications', 'database_notifications', 'password_changed_at',
+        'is_checker', 'is_verifier', 'is_approver',
     ];
 
     protected $hidden = [
@@ -27,6 +28,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_notifications' => 'boolean',
         'database_notifications' => 'boolean',
         'password_changed_at' => 'datetime',
+        'is_checker' => 'boolean',
+        'is_verifier' => 'boolean',
+        'is_approver' => 'boolean',
     ];
 
     public function company()

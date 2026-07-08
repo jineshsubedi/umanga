@@ -102,7 +102,7 @@ const stepLabel = (s) => ({
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Approval Workflow</h3>
                     <div class="flex items-center gap-2">
                         <!-- Step 1: Checker -->
-                        <div class="flex-1 flex flex-col items-center gap-1">
+                        <div v-if="memo.checker_id" class="flex-1 flex flex-col items-center gap-1">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
                                 :class="{
                                     'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft',
@@ -115,24 +115,24 @@ const stepLabel = (s) => ({
                             <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">{{ memo.checker?.name }}</p>
                             <p class="text-[11px] text-gray-500">Checker</p>
                         </div>
-                        <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <svg v-if="memo.checker_id && (memo.verifier_id || memo.approver_id)" class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         <!-- Step 2: Verifier -->
-                        <div class="flex-1 flex flex-col items-center gap-1">
+                        <div v-if="memo.verifier_id" class="flex-1 flex flex-col items-center gap-1">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
                                 :class="{
-                                    'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft',
-                                    'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400': memo.status === 'pending_checker',
-                                    'bg-gray-100 text-gray-400': memo.status === 'draft',
-                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.checker_id && r.status === 'rejected'),
+                                    'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft' && memo.status !== 'pending_verifier',
+                                    'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400': memo.status === 'pending_verifier',
+                                    'bg-gray-100 text-gray-400': ['draft','pending_checker'].includes(memo.status),
+                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.verifier_id && r.status === 'rejected'),
                                 }">
                                 {{ memo.verifier?.name?.charAt(0) }}
                             </div>
                             <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">{{ memo.verifier?.name }}</p>
                             <p class="text-[11px] text-gray-500">Verifier</p>
                         </div>
-                        <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <svg v-if="memo.verifier_id && memo.approver_id" class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         <!-- Step 3: Approver -->
-                        <div class="flex-1 flex flex-col items-center gap-1">
+                        <div v-if="memo.approver_id" class="flex-1 flex flex-col items-center gap-1">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
                                 :class="{
                                     'bg-green-100 text-green-700': memo.status === 'approved',

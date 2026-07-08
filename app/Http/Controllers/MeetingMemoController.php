@@ -67,38 +67,44 @@ class MeetingMemoController extends Controller
     {
         abort_if(auth()->user()->role !== 'staff', 403, 'Only staff members can create memos.');
 
-        $users = User::where('company_id', auth()->user()->company_id)
+        $company = auth()->user()->company;
+
+        $users = User::where('company_id', $company->id)
             ->where('status', 'active')
             ->where('id', '!=', auth()->id())
-            ->select('id', 'name', 'designation', 'role')
+            ->select('id', 'name', 'designation', 'role', 'is_checker', 'is_verifier', 'is_approver')
             ->get();
 
-        return Inertia::render('MeetingMemos/Create', compact('users'));
+        return Inertia::render('MeetingMemos/Create', compact('users', 'company'));
     }
 
     public function store(Request $request)
     {
         abort_if(auth()->user()->role !== 'staff', 403, 'Only staff members can create memos.');
+        $company = auth()->user()->company;
 
-        $request->validate([
+        $rules = [
             'title'        => 'required|string|max:255',
             'content'      => 'required|string',
             'meeting_date' => 'required|date',
-            'checker_id'   => 'required|exists:users,id',
-            'verifier_id'  => 'required|exists:users,id',
-            'approver_id'  => 'required|exists:users,id',
             'attachments.*'=> 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,ppt,pptx,txt|max:10240',
-        ]);
+        ];
+
+        if ($company->has_checker) $rules['checker_id'] = 'required|exists:users,id';
+        if ($company->has_verifier) $rules['verifier_id'] = 'required|exists:users,id';
+        if ($company->has_approver) $rules['approver_id'] = 'required|exists:users,id';
+
+        $request->validate($rules);
 
         $meetingMemo = MeetingMemo::create([
-            'company_id'   => auth()->user()->company_id,
+            'company_id'   => $company->id,
             'created_by'   => auth()->id(),
             'title'        => $request->title,
             'content'      => $request->content,
             'meeting_date' => $request->meeting_date,
-            'checker_id'   => $request->checker_id,
-            'verifier_id'  => $request->verifier_id,
-            'approver_id'  => $request->approver_id,
+            'checker_id'   => $request->checker_id ?? null,
+            'verifier_id'  => $request->verifier_id ?? null,
+            'approver_id'  => $request->approver_id ?? null,
             'status'       => 'draft',
         ]);
 
@@ -140,15 +146,18 @@ class MeetingMemoController extends Controller
         
         $memo->load(['latestReview', 'attachments', 'checker:id,name', 'verifier:id,name', 'approver:id,name']);
 
-        $users = User::where('company_id', auth()->user()->company_id)
+        $company = auth()->user()->company;
+
+        $users = User::where('company_id', $company->id)
             ->where('status', 'active')
             ->where('id', '!=', auth()->id())
-            ->select('id', 'name', 'designation', 'role')
+            ->select('id', 'name', 'designation', 'role', 'is_checker', 'is_verifier', 'is_approver')
             ->get();
 
         return Inertia::render('MeetingMemos/Edit', [
             'memo' => $memo,
             'users' => $users,
+            'company' => $company,
         ]);
     }
 
@@ -157,17 +166,28 @@ class MeetingMemoController extends Controller
         abort_if($memo->created_by !== auth()->id(), 403);
         abort_if($memo->status !== 'draft', 422, 'Cannot edit this memo.');
 
-        $request->validate([
+        $company = auth()->user()->company;
+        $rules = [
             'title'        => 'required|string|max:255',
             'content'      => 'required|string',
             'meeting_date' => 'required|date',
-            'checker_id'   => 'required|exists:users,id',
-            'verifier_id'  => 'required|exists:users,id',
-            'approver_id'  => 'required|exists:users,id',
             'attachments.*'=> 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,ppt,pptx,txt|max:10240',
-        ]);
+        ];
 
-        $memo->update($request->only('title', 'content', 'meeting_date', 'checker_id', 'verifier_id', 'approver_id'));
+        if ($company->has_checker) $rules['checker_id'] = 'required|exists:users,id';
+        if ($company->has_verifier) $rules['verifier_id'] = 'required|exists:users,id';
+        if ($company->has_approver) $rules['approver_id'] = 'required|exists:users,id';
+
+        $request->validate($rules);
+
+        $memo->update([
+            'title' => $request->title,
+            'content' => $request->content,
+            'meeting_date' => $request->meeting_date,
+            'checker_id' => $request->checker_id ?? null,
+            'verifier_id' => $request->verifier_id ?? null,
+            'approver_id' => $request->approver_id ?? null,
+        ]);
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -189,7 +209,17 @@ class MeetingMemoController extends Controller
         abort_if($memo->created_by !== auth()->id(), 403);
         abort_if($memo->status !== 'draft', 422, 'Only draft memos can be submitted.');
 
-        $memo->update(['status' => 'pending_checker']);
+        $company = $memo->company;
+        $status = 'approved';
+        if ($company->has_checker) {
+            $status = 'pending_checker';
+        } elseif ($company->has_verifier) {
+            $status = 'pending_verifier';
+        } elseif ($company->has_approver) {
+            $status = 'pending_approver';
+        }
+
+        $memo->update(['status' => $status]);
 
         $reviewerIds = array_unique(array_filter([$memo->checker_id, $memo->verifier_id, $memo->approver_id]));
         if (!empty($reviewerIds)) {
@@ -199,7 +229,7 @@ class MeetingMemoController extends Controller
             }
         }
 
-        return back()->with('success', 'Memo submitted for checking.');
+        return back()->with('success', 'Memo submitted.');
     }
 
     public function review(Request $request, MeetingMemo $memo)
@@ -214,18 +244,30 @@ class MeetingMemoController extends Controller
 
         $newStatus = $memo->status;
         $nextReviewer = null;
+        $company = $memo->company;
 
         if ($memo->status === 'pending_checker' && $memo->checker_id === $user->id) {
             if ($request->status === 'approved') {
-                $newStatus = 'pending_verifier';
-                $nextReviewer = $memo->verifier;
+                if ($company->has_verifier) {
+                    $newStatus = 'pending_verifier';
+                    $nextReviewer = $memo->verifier;
+                } elseif ($company->has_approver) {
+                    $newStatus = 'pending_approver';
+                    $nextReviewer = $memo->approver;
+                } else {
+                    $newStatus = 'approved';
+                }
             } else {
                 $newStatus = 'rejected';
             }
         } elseif ($memo->status === 'pending_verifier' && $memo->verifier_id === $user->id) {
             if ($request->status === 'approved') {
-                $newStatus = 'pending_approver';
-                $nextReviewer = $memo->approver;
+                if ($company->has_approver) {
+                    $newStatus = 'pending_approver';
+                    $nextReviewer = $memo->approver;
+                } else {
+                    $newStatus = 'approved';
+                }
             } else {
                 $newStatus = 'rejected';
             }

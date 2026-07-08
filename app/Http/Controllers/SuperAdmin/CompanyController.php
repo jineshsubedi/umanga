@@ -40,6 +40,9 @@ class CompanyController extends Controller
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'status'  => 'required|in:active,inactive',
+            'has_checker' => 'boolean',
+            'has_verifier' => 'boolean',
+            'has_approver' => 'boolean',
         ]);
 
         Company::create($validated);
@@ -83,6 +86,9 @@ class CompanyController extends Controller
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'status'  => 'required|in:active,inactive',
+            'has_checker' => 'boolean',
+            'has_verifier' => 'boolean',
+            'has_approver' => 'boolean',
         ]);
 
         $company->update($validated);

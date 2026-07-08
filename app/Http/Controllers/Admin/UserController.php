@@ -25,7 +25,8 @@ class UserController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Users/Create');
+        $company = auth()->user()->company;
+        return Inertia::render('Admin/Users/Create', compact('company'));
     }
 
     public function store(Request $request)
@@ -36,6 +37,9 @@ class UserController extends Controller
             'role'        => 'required|in:manager,staff',
             'designation' => 'nullable|string|max:255',
             'password'    => ['required', Rules\Password::defaults()],
+            'is_checker'  => 'boolean',
+            'is_verifier' => 'boolean',
+            'is_approver' => 'boolean',
         ]);
 
         $user = User::create([
@@ -46,6 +50,9 @@ class UserController extends Controller
             'designation' => $request->designation,
             'password'    => Hash::make($request->password),
             'status'      => 'active',
+            'is_checker'  => $request->is_checker ?? false,
+            'is_verifier' => $request->is_verifier ?? false,
+            'is_approver' => $request->is_approver ?? false,
         ]);
 
         event(new Registered($user));
@@ -56,7 +63,8 @@ class UserController extends Controller
     public function edit(User $user)
     {
         abort_if($user->company_id !== auth()->user()->company_id, 403);
-        return Inertia::render('Admin/Users/Edit', compact('user'));
+        $company = auth()->user()->company;
+        return Inertia::render('Admin/Users/Edit', compact('user', 'company'));
     }
 
     public function update(Request $request, User $user)
@@ -68,9 +76,12 @@ class UserController extends Controller
             'role'        => 'required|in:manager,staff',
             'designation' => 'nullable|string|max:255',
             'status'      => 'required|in:active,inactive',
+            'is_checker'  => 'boolean',
+            'is_verifier' => 'boolean',
+            'is_approver' => 'boolean',
         ]);
 
-        $user->update($request->only('name', 'role', 'designation', 'status'));
+        $user->update($request->only('name', 'role', 'designation', 'status', 'is_checker', 'is_verifier', 'is_approver'));
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

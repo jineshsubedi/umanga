@@ -61,6 +61,9 @@ class UserController extends Controller
             'company_id' => 'required|exists:companies,id',
             'role'       => 'required|in:admin,manager,staff',
             'designation'=> 'nullable|string|max:255',
+            'is_checker' => 'boolean',
+            'is_verifier'=> 'boolean',
+            'is_approver'=> 'boolean',
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make('password');
@@ -159,6 +162,9 @@ class UserController extends Controller
             'role'       => 'required|in:admin,manager,staff',
             'designation'=> 'nullable|string|max:255',
             'status'     => 'required|in:active,inactive',
+            'is_checker' => 'boolean',
+            'is_verifier'=> 'boolean',
+            'is_approver'=> 'boolean',
         ]);
 
         $user->update($validated);

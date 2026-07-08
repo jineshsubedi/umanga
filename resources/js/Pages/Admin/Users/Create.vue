@@ -5,7 +5,23 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-const form = useForm({ name: '', email: '', role: 'staff', designation: '', password: '' });
+const props = defineProps({
+    company: {
+        type: Object,
+        required: true
+    }
+});
+
+const form = useForm({ 
+    name: '', 
+    email: '', 
+    role: 'staff', 
+    designation: '', 
+    password: '',
+    is_checker: false,
+    is_verifier: false,
+    is_approver: false,
+});
 const submit = () => form.post(route('admin.users.store'));
 </script>
 
@@ -67,6 +83,24 @@ const submit = () => form.post(route('admin.users.store'));
                                 <InputLabel for="password" value="Password" class="font-semibold text-gray-700 dark:text-gray-300" />
                                 <TextInput id="password" type="password" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.password" required />
                                 <InputError class="mt-2" :message="form.errors.password" />
+                            </div>
+
+                            <div v-if="company && (company.has_checker || company.has_verifier || company.has_approver)" class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Memo Workflow Roles</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div v-if="company.has_checker" class="flex items-center gap-2">
+                                        <input id="is_checker" type="checkbox" v-model="form.is_checker" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                        <InputLabel for="is_checker" value="Can Check Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
+                                    </div>
+                                    <div v-if="company.has_verifier" class="flex items-center gap-2">
+                                        <input id="is_verifier" type="checkbox" v-model="form.is_verifier" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                        <InputLabel for="is_verifier" value="Can Verify Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
+                                    </div>
+                                    <div v-if="company.has_approver" class="flex items-center gap-2">
+                                        <input id="is_approver" type="checkbox" v-model="form.is_approver" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                        <InputLabel for="is_approver" value="Can Approve Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex items-center justify-end gap-3 pt-4">
                                 <Link :href="route('admin.users.index')" class="text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">Cancel</Link>

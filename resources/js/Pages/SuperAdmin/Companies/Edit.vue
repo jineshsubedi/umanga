@@ -19,6 +19,9 @@ const form = useForm({
     phone: props.company.phone || '',
     address: props.company.address || '',
     status: props.company.status || 'active',
+    has_checker: props.company.has_checker ?? true,
+    has_verifier: props.company.has_verifier ?? true,
+    has_approver: props.company.has_approver ?? true,
 });
 
 const submit = () => {
@@ -74,6 +77,25 @@ const submit = () => {
                                 <option value="inactive">Inactive</option>
                             </select>
                             <InputError class="mt-2" :message="form.errors.status" />
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Memo Approval Workflow Preferences</h3>
+                            
+                            <div class="flex items-center gap-2">
+                                <input id="has_checker" type="checkbox" v-model="form.has_checker" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                <InputLabel for="has_checker" value="Enable Checker Step" class="mb-0" />
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <input id="has_verifier" type="checkbox" v-model="form.has_verifier" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                <InputLabel for="has_verifier" value="Enable Verifier Step" class="mb-0" />
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <input id="has_approver" type="checkbox" v-model="form.has_approver" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                <InputLabel for="has_approver" value="Enable Approver Step" class="mb-0" />
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

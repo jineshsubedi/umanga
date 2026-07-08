@@ -9,7 +9,16 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'email', 'phone', 'address', 'status'];
+    protected $fillable = [
+        'name', 'email', 'phone', 'address', 'status',
+        'has_checker', 'has_verifier', 'has_approver'
+    ];
+
+    protected $casts = [
+        'has_checker' => 'boolean',
+        'has_verifier' => 'boolean',
+        'has_approver' => 'boolean',
+    ];
 
     public function users()
     {

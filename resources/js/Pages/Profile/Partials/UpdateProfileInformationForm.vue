@@ -94,6 +94,17 @@ const updateProfileInformation = () => {
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
+            <div v-if="user.department">
+                <InputLabel for="department" value="Department" />
+                <TextInput
+                    id="department"
+                    type="text"
+                    class="mt-1 block w-full bg-gray-50 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                    :value="user.department"
+                    disabled
+                />
+            </div>
+
             <div v-if="['staff', 'manager', 'admin'].includes(user.role)">
                 <InputLabel for="signature" value="Signature (For Memo Approval)" />
 

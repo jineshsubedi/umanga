@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
+use NotificationChannels\WebPush\WebPushChannel;
 
 class MemoSubmitted extends Notification implements ShouldQueue
 {
@@ -22,6 +24,9 @@ class MemoSubmitted extends Notification implements ShouldQueue
         }
         if ($notifiable->email_notifications) {
             $channels[] = 'mail';
+        }
+        if ($notifiable->push_notifications) {
+            $channels[] = WebPushChannel::class;
         }
         return $channels;
     }
@@ -45,5 +50,15 @@ class MemoSubmitted extends Notification implements ShouldQueue
             'url'        => '/memos/' . $this->memo->id,
             'actor_name' => $this->memo->creator->name,
         ];
+    }
+
+    public function toWebPush($notifiable, $notification)
+    {
+        return (new WebPushMessage)
+            ->title('Memo Submitted for Review')
+            ->icon('/favicon.ico')
+            ->body("{$this->memo->creator->name} submitted the memo \"{$this->memo->title}\" for review.")
+            ->action('View Memo', '/memos/' . $this->memo->id)
+            ->data(['url' => '/memos/' . $this->memo->id]);
     }
 }

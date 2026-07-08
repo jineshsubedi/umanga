@@ -28,6 +28,7 @@ const form = useForm({
     is_checker: props.user.is_checker ?? false,
     is_verifier: props.user.is_verifier ?? false,
     is_approver: props.user.is_approver ?? false,
+    department: props.user.department || '',
 });
 
 const selectedCompany = computed(() => {
@@ -68,10 +69,23 @@ const submit = () => {
                             <InputError class="mt-2" :message="form.errors.email" />
                         </div>
 
-                        <div>
-                            <InputLabel for="designation" value="Designation (Optional)" />
-                            <TextInput id="designation" type="text" class="mt-1 block w-full dark:text-gray-100" v-model="form.designation" />
-                            <InputError class="mt-2" :message="form.errors.designation" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <InputLabel for="designation" value="Designation (Optional)" />
+                                <TextInput id="designation" type="text" class="mt-1 block w-full dark:text-gray-100" v-model="form.designation" />
+                                <InputError class="mt-2" :message="form.errors.designation" />
+                            </div>
+
+                            <div v-if="selectedCompany && selectedCompany.departments && selectedCompany.departments.length > 0">
+                                <InputLabel for="department" value="Department (Optional)" />
+                                <select id="department" v-model="form.department" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                    <option value="">Select a department</option>
+                                    <option v-for="dept in selectedCompany.departments" :key="dept" :value="dept">
+                                        {{ dept }}
+                                    </option>
+                                </select>
+                                <InputError class="mt-2" :message="form.errors.department" />
+                            </div>
                         </div>
 
                         <div>

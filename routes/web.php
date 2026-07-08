@@ -40,6 +40,10 @@ Route::middleware(['auth', 'password.change.required'])->group(function () {
 Route::middleware(['auth', 'password.change.required'])->group(function () {
     Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::get('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
+    
+    // Push Subscriptions
+    Route::post('/push-subscriptions', [\App\Http\Controllers\PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+    Route::delete('/push-subscriptions', [\App\Http\Controllers\PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
 });
 
 // ─── Attendance & Memos (all authenticated non-superadmin users) ────────────────────

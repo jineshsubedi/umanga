@@ -11,13 +11,14 @@ class Company extends Model
 
     protected $fillable = [
         'name', 'email', 'phone', 'address', 'status',
-        'has_checker', 'has_verifier', 'has_approver'
+        'has_checker', 'has_verifier', 'has_approver', 'departments'
     ];
 
     protected $casts = [
         'has_checker' => 'boolean',
         'has_verifier' => 'boolean',
         'has_approver' => 'boolean',
+        'departments' => 'array',
     ];
 
     public function users()

@@ -7,15 +7,16 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasPushSubscriptions;
 
     protected $fillable = [
         'company_id', 'name', 'email', 'password', 'role', 'designation', 'status', 'signature_path',
-        'email_notifications', 'database_notifications', 'password_changed_at',
-        'is_checker', 'is_verifier', 'is_approver',
+        'email_notifications', 'database_notifications', 'push_notifications', 'password_changed_at',
+        'is_checker', 'is_verifier', 'is_approver', 'department',
     ];
 
     protected $hidden = [
@@ -27,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
         'email_notifications' => 'boolean',
         'database_notifications' => 'boolean',
+        'push_notifications' => 'boolean',
         'password_changed_at' => 'datetime',
         'is_checker' => 'boolean',
         'is_verifier' => 'boolean',

@@ -15,6 +15,7 @@ const form = useForm({
     is_checker:  props.user.is_checker ?? false,
     is_verifier: props.user.is_verifier ?? false,
     is_approver: props.user.is_approver ?? false,
+    department:  props.user.department || '',
 });
 
 const submit = () => form.put(route('admin.users.update', props.user.id));
@@ -65,10 +66,22 @@ const submit = () => form.put(route('admin.users.update', props.user.id));
                                 </div>
                             </div>
 
-                            <div>
-                                <InputLabel for="designation" value="Designation (Optional)" class="font-semibold text-gray-700 dark:text-gray-300" />
-                                <TextInput id="designation" type="text" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.designation" />
-                                <InputError class="mt-2" :message="form.errors.designation" />
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <InputLabel for="designation" value="Designation (Optional)" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                    <TextInput id="designation" type="text" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3" v-model="form.designation" />
+                                    <InputError class="mt-2" :message="form.errors.designation" />
+                                </div>
+                                <div v-if="company && company.departments && company.departments.length > 0">
+                                    <InputLabel for="department" value="Department (Optional)" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                    <select id="department" v-model="form.department" class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3">
+                                        <option value="">Select a department</option>
+                                        <option v-for="dept in company.departments" :key="dept" :value="dept">
+                                            {{ dept }}
+                                        </option>
+                                    </select>
+                                    <InputError class="mt-2" :message="form.errors.department" />
+                                </div>
                             </div>
 
                             <div>

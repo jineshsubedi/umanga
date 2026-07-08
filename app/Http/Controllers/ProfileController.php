@@ -77,6 +77,7 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'email_notifications' => ['required', 'boolean'],
             'database_notifications' => ['required', 'boolean'],
+            'push_notifications' => ['required', 'boolean'],
         ]);
         
         $request->user()->update($validated);

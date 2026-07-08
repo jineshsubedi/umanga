@@ -64,6 +64,7 @@ class UserController extends Controller
             'is_checker' => 'boolean',
             'is_verifier'=> 'boolean',
             'is_approver'=> 'boolean',
+            'department' => 'nullable|string|max:255',
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make('password');
@@ -165,6 +166,7 @@ class UserController extends Controller
             'is_checker' => 'boolean',
             'is_verifier'=> 'boolean',
             'is_approver'=> 'boolean',
+            'department' => 'nullable|string|max:255',
         ]);
 
         $user->update($validated);

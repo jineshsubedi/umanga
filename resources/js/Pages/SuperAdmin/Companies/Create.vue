@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const form = useForm({
     name: '',
@@ -15,7 +16,22 @@ const form = useForm({
     has_checker: true,
     has_verifier: true,
     has_approver: true,
+    departments: [],
 });
+
+const newDepartment = ref('');
+
+const addDepartment = () => {
+    const dept = newDepartment.value.trim();
+    if (dept && !form.departments.includes(dept)) {
+        form.departments.push(dept);
+        newDepartment.value = '';
+    }
+};
+
+const removeDepartment = (index) => {
+    form.departments.splice(index, 1);
+};
 
 const submit = () => {
     form.post(route('super-admin.companies.store'));
@@ -89,6 +105,23 @@ const submit = () => {
                                 <input id="has_approver" type="checkbox" v-model="form.has_approver" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
                                 <InputLabel for="has_approver" value="Enable Approver Step" class="mb-0" />
                             </div>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Departments (Optional)</h3>
+                            <div class="flex items-center gap-2">
+                                <TextInput id="new_department" type="text" class="flex-1 dark:text-gray-100" v-model="newDepartment" placeholder="e.g. Human Resources, IT" @keydown.enter.prevent="addDepartment" />
+                                <button type="button" @click="addDepartment" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">Add</button>
+                            </div>
+                            <div v-if="form.departments.length > 0" class="flex flex-wrap gap-2 mt-2">
+                                <span v-for="(dept, index) in form.departments" :key="index" class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm border border-indigo-200 dark:border-indigo-800">
+                                    {{ dept }}
+                                    <button type="button" @click="removeDepartment(index)" class="text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-200 focus:outline-none">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </span>
+                            </div>
+                            <InputError class="mt-2" :message="form.errors.departments" />
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

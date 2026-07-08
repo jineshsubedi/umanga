@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
+use NotificationChannels\WebPush\WebPushChannel;
 
 class MemoReviewed extends Notification implements ShouldQueue
 {
@@ -27,6 +29,9 @@ class MemoReviewed extends Notification implements ShouldQueue
         }
         if ($notifiable->email_notifications) {
             $channels[] = 'mail';
+        }
+        if ($notifiable->push_notifications) {
+            $channels[] = WebPushChannel::class;
         }
         return $channels;
     }
@@ -60,5 +65,22 @@ class MemoReviewed extends Notification implements ShouldQueue
             'url'          => '/memos/' . $this->memo->id,
             'actor_name'   => $this->reviewerName,
         ];
+    }
+
+    public function toWebPush($notifiable, $notification)
+    {
+        $verb = $this->status === 'approved' ? 'approved' : 'rejected';
+        $body = "{$this->reviewerName} {$verb} the memo \"{$this->memo->title}\".";
+        
+        if ($this->comment) {
+            $body .= "\nComment: {$this->comment}";
+        }
+        
+        return (new WebPushMessage)
+            ->title('Memo ' . ucfirst($verb))
+            ->icon('/favicon.ico')
+            ->body($body)
+            ->action('View Memo', '/memos/' . $this->memo->id)
+            ->data(['url' => '/memos/' . $this->memo->id]);
     }
 }

@@ -49,3 +49,53 @@ self.addEventListener('fetch', (event) => {
         );
     }
 });
+
+self.addEventListener('push', function (event) {
+    if (!(self.Notification && self.Notification.permission === 'granted')) {
+        return;
+    }
+
+    const sendNotification = body => {
+        return self.registration.showNotification(body.title, {
+            body: body.body,
+            icon: body.icon || '/icons/logo.png',
+            data: body.data || {},
+            actions: body.actions || [],
+            requireInteraction: true,
+        });
+    };
+
+    if (event.data) {
+        const message = event.data.json();
+        event.waitUntil(sendNotification(message));
+    }
+});
+
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+
+    const urlToOpen = event.notification.data.url || '/';
+
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        }).then(function (windowClients) {
+            let matchingClient = null;
+
+            for (let i = 0; i < windowClients.length; i++) {
+                const windowClient = windowClients[i];
+                if (windowClient.url.includes(urlToOpen)) {
+                    matchingClient = windowClient;
+                    break;
+                }
+            }
+
+            if (matchingClient) {
+                return matchingClient.focus();
+            } else {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
+});

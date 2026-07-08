@@ -43,6 +43,8 @@ class CompanyController extends Controller
             'has_checker' => 'boolean',
             'has_verifier' => 'boolean',
             'has_approver' => 'boolean',
+            'departments' => 'nullable|array',
+            'departments.*' => 'string|max:255',
         ]);
 
         Company::create($validated);
@@ -89,6 +91,8 @@ class CompanyController extends Controller
             'has_checker' => 'boolean',
             'has_verifier' => 'boolean',
             'has_approver' => 'boolean',
+            'departments' => 'nullable|array',
+            'departments.*' => 'string|max:255',
         ]);
 
         $company->update($validated);

@@ -40,6 +40,7 @@ class UserController extends Controller
             'is_checker'  => 'boolean',
             'is_verifier' => 'boolean',
             'is_approver' => 'boolean',
+            'department'  => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
@@ -53,6 +54,7 @@ class UserController extends Controller
             'is_checker'  => $request->is_checker ?? false,
             'is_verifier' => $request->is_verifier ?? false,
             'is_approver' => $request->is_approver ?? false,
+            'department'  => $request->department,
         ]);
 
         event(new Registered($user));
@@ -79,9 +81,10 @@ class UserController extends Controller
             'is_checker'  => 'boolean',
             'is_verifier' => 'boolean',
             'is_approver' => 'boolean',
+            'department'  => 'nullable|string|max:255',
         ]);
 
-        $user->update($request->only('name', 'role', 'designation', 'status', 'is_checker', 'is_verifier', 'is_approver'));
+        $user->update($request->only('name', 'role', 'designation', 'status', 'is_checker', 'is_verifier', 'is_approver', 'department'));
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

@@ -2,16 +2,28 @@
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
-
+import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 
-const user = usePage().props.auth.user;
+const page = usePage();
+
+// Use computed to always read latest Inertia shared props
+const userProps = computed(() => page.props.auth.user);
 
 const form = useForm({
-    email_notifications: user.email_notifications ?? true,
-    database_notifications: user.database_notifications ?? true,
-    push_notifications: user.push_notifications ?? true,
+    email_notifications: userProps.value.email_notifications ?? true,
+    database_notifications: userProps.value.database_notifications ?? true,
+    push_notifications: userProps.value.push_notifications ?? false,
 });
+
+// Keep form in sync whenever Inertia refreshes page props after save
+watch(userProps, (newUser) => {
+    form.email_notifications = newUser.email_notifications ?? true;
+    form.database_notifications = newUser.database_notifications ?? true;
+    form.push_notifications = newUser.push_notifications ?? false;
+}, { deep: true });
+
+const pushError = ref(null);
 
 const urlBase64ToUint8Array = (base64String) => {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -27,44 +39,65 @@ const urlBase64ToUint8Array = (base64String) => {
 };
 
 const subscribeUser = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    try {
-        const registration = await navigator.serviceWorker.ready;
-        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-        if (!vapidPublicKey) return;
-
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-        });
-
-        await axios.post('/push-subscriptions', subscription);
-    } catch (e) {
-        console.error("Push subscription failed", e);
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        throw new Error('Push notifications not supported in this browser.');
     }
+    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+    if (!vapidPublicKey) throw new Error('VAPID public key is not configured.');
+
+    await navigator.serviceWorker.register('/sw.js');
+    const registration = await navigator.serviceWorker.ready;
+
+    const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+    });
+
+    await axios.post(route('push-subscriptions.store'), subscription.toJSON());
 };
 
 const unsubscribeUser = async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     try {
+        await navigator.serviceWorker.register('/sw.js');
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
-            await axios.delete('/push-subscriptions', { data: { endpoint: subscription.endpoint } });
+            await axios.delete(route('push-subscriptions.destroy'), {
+                data: { endpoint: subscription.endpoint },
+            });
             await subscription.unsubscribe();
         }
     } catch (e) {
-        console.error("Push unsubscription failed", e);
+        console.error('Push unsubscription failed', e);
     }
 };
 
 const updatePreferences = async () => {
+    pushError.value = null;
+
     if (form.push_notifications) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            await subscribeUser();
-        } else {
+        if (Notification.permission === 'denied') {
+            pushError.value = 'Push notifications are blocked in your browser. Please allow them in site settings, then try again.';
             form.push_notifications = false;
+        } else {
+            // Request permission if not already granted
+            const permission = Notification.permission === 'granted'
+                ? 'granted'
+                : await Notification.requestPermission();
+
+            if (permission === 'granted') {
+                try {
+                    await subscribeUser();
+                } catch (e) {
+                    console.error('Push subscription failed:', e);
+                    pushError.value = 'Could not subscribe to push notifications. Your other preferences will still be saved.';
+                    form.push_notifications = false;
+                }
+            } else {
+                // User dismissed the prompt without granting
+                form.push_notifications = false;
+            }
         }
     } else {
         await unsubscribeUser();
@@ -109,6 +142,7 @@ const updatePreferences = async () => {
                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Receive Push Notifications (Desktop/Mobile)</span>
                 </label>
                 <InputError class="mt-2" :message="form.errors.push_notifications" />
+                <p v-if="pushError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ pushError }}</p>
             </div>
 
             <div class="flex items-center gap-4">

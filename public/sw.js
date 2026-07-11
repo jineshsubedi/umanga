@@ -4,7 +4,6 @@ const OFFLINE_URL = '/offline.html';
 const ASSETS_TO_CACHE = [
     OFFLINE_URL,
     '/icons/logo.png',
-    '/icons/logo.png',
     '/manifest.json'
 ];
 
@@ -12,6 +11,9 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS_TO_CACHE);
+        }).catch((err) => {
+            // Don't let a caching failure prevent the SW from installing
+            console.warn('SW: caching failed during install, continuing anyway.', err);
         })
     );
     self.skipWaiting();
@@ -51,24 +53,23 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', function (event) {
-    if (!(self.Notification && self.Notification.permission === 'granted')) {
-        return;
+    let data = {};
+    try {
+        data = event.data?.json() ?? {};
+    } catch (e) {
+        data = { title: 'Notification', body: event.data?.text() ?? '' };
     }
 
-    const sendNotification = body => {
-        return self.registration.showNotification(body.title, {
-            body: body.body,
-            icon: body.icon || '/icons/logo.png',
-            data: body.data || {},
-            actions: body.actions || [],
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'UMNG', {
+            body: data.body,
+            icon: data.icon || '/icons/logo.png',
+            badge: data.badge,
+            data: data.data || {},
+            actions: data.actions || [],
             requireInteraction: true,
-        });
-    };
-
-    if (event.data) {
-        const message = event.data.json();
-        event.waitUntil(sendNotification(message));
-    }
+        })
+    );
 });
 
 self.addEventListener('notificationclick', function (event) {

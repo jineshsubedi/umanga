@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { useTheme } from '@/Composables/useTheme';
+import axios from 'axios';
 
 const { isDark, toggleTheme } = useTheme();
 
@@ -77,6 +78,63 @@ watch(() => flash.value?.error, (val) => {
     }
 }, { immediate: true });
 
+const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+};
+
+const showPushPrompt = ref(false);
+
+const checkPushPermission = () => {
+    if (user.value?.push_notifications === false && Notification.permission !== 'denied') {
+        setTimeout(() => {
+            showPushPrompt.value = true;
+        }, 1000);
+    }
+};
+
+const enablePushNotifications = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+        try {
+            await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.ready;
+            const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+            if (!vapidPublicKey) return;
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+
+            await axios.post(route('push-subscriptions.store'), subscription.toJSON());
+            user.value.push_notifications = true;
+        } catch (e) {
+            console.error("Push subscription failed", e);
+        } finally {
+            showPushPrompt.value = false;
+        }
+    } else {
+        showPushPrompt.value = false;
+    }
+};
+
+const dismissPushPrompt = () => {
+    showPushPrompt.value = false;
+};
+
+onMounted(() => {
+    checkPushPermission();
+});
+
 const roleBadge = computed(() => {
     let label = role.value;
     if (role.value === 'super_admin') label = 'Super Admin';
@@ -143,6 +201,42 @@ const navigation = computed(() => {
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 <span class="text-sm flex-1">{{ flash.error }}</span>
                 <button @click="showError = false" class="text-red-200 hover:text-white ml-1">✕</button>
+            </div>
+        </Transition>
+
+        <!-- Push Notifications Prompt -->
+        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-full">
+            <div v-if="showPushPrompt" class="fixed top-0 left-0 right-0 z-50 bg-indigo-600 shadow-md">
+                <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between flex-wrap">
+                        <div class="w-0 flex-1 flex items-center">
+                            <span class="flex p-2 rounded-lg bg-indigo-800">
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                            </span>
+                            <p class="ml-3 font-medium text-white truncate">
+                                <span>Get instant updates on your memos and attendance! Enable push notifications now.</span>
+                            </p>
+                        </div>
+                        <div class="order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto flex gap-2">
+                            <button @click="enablePushNotifications" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50">
+                                Enable
+                            </button>
+                            <button @click="dismissPushPrompt" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white hover:bg-indigo-500">
+                                Maybe Later
+                            </button>
+                        </div>
+                        <div class="order-2 flex-shrink-0 sm:order-3 sm:ml-3">
+                            <button @click="dismissPushPrompt" type="button" class="-mr-1 flex p-2 rounded-md hover:bg-indigo-500 focus:outline-none sm:-mr-2">
+                                <span class="sr-only">Dismiss</span>
+                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </Transition>
 

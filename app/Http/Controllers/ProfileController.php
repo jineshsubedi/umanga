@@ -75,12 +75,17 @@ class ProfileController extends Controller
     public function updatePreferences(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'email_notifications' => ['required', 'boolean'],
-            'database_notifications' => ['required', 'boolean'],
-            'push_notifications' => ['required', 'boolean'],
+            'email_notifications'    => ['nullable', 'boolean'],
+            'database_notifications' => ['nullable', 'boolean'],
+            'push_notifications'     => ['nullable', 'boolean'],
         ]);
-        
-        $request->user()->update($validated);
+
+        // Ensure false values are stored when checkbox is unchecked
+        $request->user()->update([
+            'email_notifications'    => (bool) ($validated['email_notifications'] ?? false),
+            'database_notifications' => (bool) ($validated['database_notifications'] ?? false),
+            'push_notifications'     => (bool) ($validated['push_notifications'] ?? false),
+        ]);
         
         return Redirect::route('profile.edit')->with('status', 'preferences-updated');
     }

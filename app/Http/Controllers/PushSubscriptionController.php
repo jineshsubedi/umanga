@@ -11,6 +11,8 @@ class PushSubscriptionController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('Push Subscription Payload:', $request->all());
+
         $request->validate([
             'endpoint' => 'required',
             'keys.auth' => 'required',
@@ -23,6 +25,12 @@ class PushSubscriptionController extends Controller
         $contentEncoding = $request->contentEncoding ?? 'aesgcm';
 
         $request->user()->updatePushSubscription($endpoint, $key, $token, $contentEncoding);
+
+        // Enable push notifications for the user
+        $request->user()->update(['push_notifications' => true]);
+
+        // Send a test notification
+        $request->user()->notify(new \App\Notifications\PushSubscriptionSuccess());
 
         return response()->json(['success' => true]);
     }

@@ -55,8 +55,9 @@ class HandleInertiaRequests extends Middleware
                     'designation'    => $request->user()->designation,
                     'signature_path' => $request->user()->signature_path ?? null,
                     'company_id'     => $request->user()->company_id,
-                    'email_notifications' => $request->user()->email_notifications,
-                    'database_notifications' => $request->user()->database_notifications,
+                    'email_notifications' => (bool) $request->user()->email_notifications,
+                    'database_notifications' => (bool) $request->user()->database_notifications,
+                    'push_notifications' => (bool) $request->user()->push_notifications,
                     'company'        => $request->user()->company ? [
                         'name' => $request->user()->company->name,
                     ] : null,

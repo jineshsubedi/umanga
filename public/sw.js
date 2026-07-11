@@ -68,6 +68,7 @@ self.addEventListener('push', function (event) {
             data: data.data || {},
             actions: data.actions || [],
             requireInteraction: true,
+            vibrate: data.vibrate || [200, 100, 200, 100, 200, 100, 200],
         })
     );
 });

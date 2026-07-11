@@ -39,7 +39,8 @@ class PushSubscriptionSuccess extends Notification
     {
         return (new \NotificationChannels\WebPush\WebPushMessage)
             ->title('Subscription Successful!')
-            ->icon('/images/logo.png')
+            ->icon('/icons/logo.png')
+            ->options(['vibrate' => [200, 100, 200, 100, 200, 100, 200]])
             ->body('You will now receive push notifications.')
             ->action('View App', 'view_app');
     }

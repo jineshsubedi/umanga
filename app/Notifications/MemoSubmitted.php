@@ -56,7 +56,8 @@ class MemoSubmitted extends Notification implements ShouldQueue
     {
         return (new WebPushMessage)
             ->title('Memo Submitted for Review')
-            ->icon('/favicon.ico')
+            ->icon('/icons/logo.png')
+            ->options(['vibrate' => [200, 100, 200, 100, 200, 100, 200]])
             ->body("{$this->memo->creator->name} submitted the memo \"{$this->memo->title}\" for review.")
             ->action('View Memo', '/memos/' . $this->memo->id)
             ->data(['url' => '/memos/' . $this->memo->id]);

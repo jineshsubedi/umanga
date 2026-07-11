@@ -78,7 +78,8 @@ class MemoReviewed extends Notification implements ShouldQueue
         
         return (new WebPushMessage)
             ->title('Memo ' . ucfirst($verb))
-            ->icon('/favicon.ico')
+            ->icon('/icons/logo.png')
+            ->options(['vibrate' => [200, 100, 200, 100, 200, 100, 200]])
             ->body($body)
             ->action('View Memo', '/memos/' . $this->memo->id)
             ->data(['url' => '/memos/' . $this->memo->id]);

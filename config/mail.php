@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('MAIL_MAILER', 'smart'),
 
     /*
     |--------------------------------------------------------------------------
@@ -44,6 +44,20 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
+        ],
+
+        'smart' => [
+            'transport' => 'smart',
+        ],
+
+        'gmail' => [
+            'transport' => 'smtp',
+            'host' => env('GMAIL_MAILER_HOST', 'smtp.gmail.com'),
+            'port' => env('GMAIL_MAILER_PORT', 465),
+            'encryption' => env('GMAIL_MAILER_ENCRYPTION', 'ssl'),
+            'username' => env('GMAIL_MAILER_USERNAME'),
+            'password' => env('GMAIL_MAILER_PASSWORD'),
+            'timeout' => null,
         ],
 
         'ses' => [

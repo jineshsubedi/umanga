@@ -38,5 +38,12 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // Ignore during migrations or console commands where table might not exist
         }
+
+        \Illuminate\Support\Facades\Mail::extend('smart', function (array $config = []) {
+            return new \App\Mail\Transports\SmartTransport(
+                \Illuminate\Support\Facades\Mail::mailer('smtp')->getSymfonyTransport(),
+                \Illuminate\Support\Facades\Mail::mailer('gmail')->getSymfonyTransport()
+            );
+        });
     }
 }

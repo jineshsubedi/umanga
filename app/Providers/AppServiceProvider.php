@@ -32,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
                         'mail.mailers.smtp.password' => $settings['mail_password'] ?? env('MAIL_PASSWORD'),
                         'mail.from.address' => $settings['mail_from_address'] ?? env('MAIL_FROM_ADDRESS'),
                         'mail.from.name' => $settings['mail_from_name'] ?? env('MAIL_FROM_NAME'),
+
+                        'mail.mailers.gmail.host' => $settings['gmail_host'] ?? env('GMAIL_MAILER_HOST', 'smtp.gmail.com'),
+                        'mail.mailers.gmail.port' => $settings['gmail_port'] ?? env('GMAIL_MAILER_PORT', 465),
+                        'mail.mailers.gmail.encryption' => $settings['gmail_encryption'] ?? env('GMAIL_MAILER_ENCRYPTION', 'ssl'),
+                        'mail.mailers.gmail.username' => $settings['gmail_username'] ?? env('GMAIL_MAILER_USERNAME'),
+                        'mail.mailers.gmail.password' => $settings['gmail_password'] ?? env('GMAIL_MAILER_PASSWORD'),
                     ]);
                 }
             }

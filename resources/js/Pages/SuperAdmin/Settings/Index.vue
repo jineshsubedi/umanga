@@ -15,6 +15,11 @@ const props = defineProps({
     mail_encryption: String,
     mail_from_address: String,
     mail_from_name: String,
+    gmail_host: String,
+    gmail_port: String,
+    gmail_username: String,
+    gmail_password: String,
+    gmail_encryption: String,
 });
 
 const form = useForm({
@@ -27,6 +32,11 @@ const form = useForm({
     mail_encryption: props.mail_encryption,
     mail_from_address: props.mail_from_address,
     mail_from_name: props.mail_from_name,
+    gmail_host: props.gmail_host,
+    gmail_port: props.gmail_port,
+    gmail_username: props.gmail_username,
+    gmail_password: props.gmail_password,
+    gmail_encryption: props.gmail_encryption,
 });
 
 const logoPreview = ref(null);
@@ -142,6 +152,36 @@ const submit = () => {
                                     class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3"
                                     v-model="form.mail_from_name" />
                                 <InputError class="mt-2" :message="form.errors.mail_from_name" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gmail Configuration Card -->
+                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 dark:border-gray-700 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="w-2 h-5 bg-red-500 rounded-full"></span>
+                            Gmail Routing Configuration
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">SMTP settings for routing emails to @gmail.com addresses.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div v-for="field in [
+                                { id: 'gmail_host', label: 'Gmail Host', type: 'text', model: 'gmail_host' },
+                                { id: 'gmail_port', label: 'Gmail Port', type: 'text', model: 'gmail_port' },
+                                { id: 'gmail_username', label: 'Gmail Username', type: 'text', model: 'gmail_username' },
+                                { id: 'gmail_password', label: 'Gmail Password', type: 'password', model: 'gmail_password' },
+                                { id: 'gmail_encryption', label: 'Encryption (tls / ssl)', type: 'text', model: 'gmail_encryption' },
+                            ]" :key="field.id">
+                                <div>
+                                    <InputLabel :for="field.id" :value="field.label" class="font-semibold text-gray-700 dark:text-gray-300" />
+                                    <TextInput :id="field.id" :type="field.type"
+                                        class="mt-2 block w-full bg-gray-50 border-gray-300 rounded-xl focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:bg-gray-700 dark:border-gray-600 dark:text-white px-4 py-3"
+                                        v-model="form[field.model]" />
+                                    <InputError class="mt-2" :message="form.errors[field.model]" />
+                                </div>
                             </div>
                         </div>
                     </div>

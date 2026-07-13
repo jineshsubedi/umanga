@@ -39,6 +39,11 @@ class HandleInertiaRequests extends Middleware
         }
 
         $appSettings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        
+        // Remove sensitive information from globally shared settings
+        unset($appSettings['mail_password']);
+        unset($appSettings['gmail_password']);
+
         if (!isset($appSettings['app_name'])) {
             $appSettings['app_name'] = config('app.name');
         }

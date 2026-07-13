@@ -15,10 +15,16 @@ class SettingController extends Controller
             'mail_host' => $settings['mail_host'] ?? '',
             'mail_port' => $settings['mail_port'] ?? '',
             'mail_username' => $settings['mail_username'] ?? '',
-            'mail_password' => $settings['mail_password'] ?? '',
+            'mail_password' => '',
             'mail_encryption' => $settings['mail_encryption'] ?? '',
             'mail_from_address' => $settings['mail_from_address'] ?? '',
             'mail_from_name' => $settings['mail_from_name'] ?? '',
+            
+            'gmail_host' => $settings['gmail_host'] ?? '',
+            'gmail_port' => $settings['gmail_port'] ?? '',
+            'gmail_username' => $settings['gmail_username'] ?? '',
+            'gmail_password' => '',
+            'gmail_encryption' => $settings['gmail_encryption'] ?? '',
         ]);
     }
 
@@ -34,18 +40,30 @@ class SettingController extends Controller
             'mail_encryption' => 'nullable|string|max:255',
             'mail_from_address' => 'nullable|string|max:255',
             'mail_from_name' => 'nullable|string|max:255',
+            'gmail_host' => 'nullable|string|max:255',
+            'gmail_port' => 'nullable|string|max:255',
+            'gmail_username' => 'nullable|string|max:255',
+            'gmail_password' => 'nullable|string|max:255',
+            'gmail_encryption' => 'nullable|string|max:255',
         ]);
 
         $keys = [
             'app_name', 'mail_host', 'mail_port', 'mail_username', 
-            'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'
+            'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name',
+            'gmail_host', 'gmail_port', 'gmail_username', 'gmail_password', 'gmail_encryption'
         ];
-
         foreach ($keys as $key) {
             if ($request->has($key)) {
+                $value = $request->$key;
+                
+                // Don't update passwords if they are empty
+                if (in_array($key, ['mail_password', 'gmail_password']) && ($value === '' || is_null($value))) {
+                    continue;
+                }
+
                 \App\Models\Setting::updateOrCreate(
                     ['key' => $key],
-                    ['value' => $request->$key]
+                    ['value' => $value]
                 );
             }
         }

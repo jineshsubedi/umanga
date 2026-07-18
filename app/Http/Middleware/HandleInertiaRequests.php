@@ -66,6 +66,7 @@ class HandleInertiaRequests extends Middleware
                     'company'        => $request->user()->company ? [
                         'name' => $request->user()->company->name,
                     ] : null,
+                    'module_permissions' => $request->user()->modulePermissions ? $request->user()->modulePermissions->pluck('module_name')->toArray() : [],
                 ] : null,
                 'notifications' => $request->user() ? $request->user()->unreadNotifications()->take(5)->get() : [],
             ],

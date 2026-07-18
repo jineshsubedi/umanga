@@ -16,9 +16,6 @@ const form = useForm({
     title: props.memo.title,
     content: props.memo.content,
     meeting_date: props.memo.meeting_date ? new Date(props.memo.meeting_date) : new Date(),
-    checker_id: props.memo.checker_id || '',
-    verifier_id: props.memo.verifier_id || '',
-    approver_id: props.memo.approver_id || '',
     attachments: [],
     _method: 'put',
 });
@@ -108,44 +105,10 @@ const submit = () => {
                             <InputError class="mt-2" :message="form.errors.content" />
                         </div>
 
-                        <!-- Reviewers Section -->
+                        <!-- Approval Workflow Note -->
                         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                             <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Approval Workflow</h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div v-if="company.has_checker">
-                                    <InputLabel for="checker_id" value="Checked By (Step 1)" />
-                                    <select id="checker_id" v-model="form.checker_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Checker</option>
-                                        <option v-for="user in users.filter(u => u.is_checker)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.checker_id" />
-                                </div>
-                                
-                                <div v-if="company.has_verifier">
-                                    <InputLabel for="verifier_id" value="Verified By (Step 2)" />
-                                    <select id="verifier_id" v-model="form.verifier_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Verifier</option>
-                                        <option v-for="user in users.filter(u => u.is_verifier)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.verifier_id" />
-                                </div>
-                                
-                                <div v-if="company.has_approver">
-                                    <InputLabel for="approver_id" value="Approved By (Step 3)" />
-                                    <select id="approver_id" v-model="form.approver_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Approver</option>
-                                        <option v-for="user in users.filter(u => u.is_approver)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.approver_id" />
-                                </div>
-                            </div>
+                            <p class="text-xs text-gray-500">The memo will be routed automatically through the company's predefined workflow once submitted.</p>
                         </div>
 
                         <!-- Existing Attachments -->

@@ -157,10 +157,14 @@ const roleBadge = computed(() => {
 
 const navigation = computed(() => {
     let nav = [];
+    const modules = user.value?.module_permissions || [];
+    
+    // For admins, give access to all core modules + specific admin stuff
     if (role.value === 'admin') {
-        nav.push({ name: 'Dashboard', href: route('admin.dashboard'), current: route().current('admin.dashboard'), icon: 'dashboard' });
+        nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
-        nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        if (modules.includes('memo') || modules.length === 0) nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
         nav.push({ name: 'Reports', href: route('reports.index'), current: route().current('reports.*'), icon: 'chart' });
         nav.push({ name: 'Attendance', href: route('admin.attendance.index'), current: route().current('admin.attendance.index'), icon: 'clock' });
         nav.push({ name: 'Calendar', href: route('admin.calendar.index'), current: route().current('admin.calendar.*'), icon: 'calendar' });
@@ -168,17 +172,20 @@ const navigation = computed(() => {
     if (role.value === 'super_admin') {
         nav.push({ name: 'Dashboard', href: route('super-admin.dashboard'), current: route().current('super-admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.companies.*'), icon: 'office' });
+        nav.push({ name: 'Workflows', href: route('super-admin.workflows.index'), current: route().current('super-admin.workflows.*'), icon: 'chart' });
         nav.push({ name: 'Users', href: route('super-admin.users.index'), current: route().current('super-admin.users.*'), icon: 'users' });
-        nav.push({ name: 'Memos', href: route('super-admin.meeting-memos.index'), current: route().current('super-admin.meeting-memos.*'), icon: 'document' });
-        nav.push({ name: 'Reports', href: route('super-admin.reports.index'), current: route().current('super-admin.reports.*'), icon: 'chart' });
         nav.push({ name: 'Settings', href: route('super-admin.settings.index'), current: route().current('super-admin.settings.*'), icon: 'settings' });
     }
     if (role.value === 'manager') {
-        nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
+        if (modules.includes('memo') || modules.length === 0) nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
         nav.push({ name: 'Calendar', href: route('manager.attendance.index'), current: route().current('manager.attendance.*'), icon: 'clock' });
     }
     if (role.value === 'staff') {
-        nav.push({ name: 'My Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
+        if (modules.includes('memo') || modules.length === 0) nav.push({ name: 'My Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
         nav.push({ name: 'Calendar', href: route('staff.attendance.index'), current: route().current('staff.attendance.*'), icon: 'clock' });
     }
     return nav;

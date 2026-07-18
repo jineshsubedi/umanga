@@ -14,9 +14,9 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, Notifiable, HasPushSubscriptions;
 
     protected $fillable = [
-        'company_id', 'name', 'email', 'password', 'role', 'designation', 'status', 'signature_path',
+        'company_id', 'department_id', 'name', 'email', 'password', 'role', 'designation', 'status', 'signature_path',
         'email_notifications', 'database_notifications', 'push_notifications', 'password_changed_at',
-        'is_checker', 'is_verifier', 'is_approver', 'department',
+        'is_checker', 'is_verifier', 'is_approver',
     ];
 
     protected $hidden = [
@@ -38,6 +38,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function modulePermissions()
+    {
+        return $this->hasMany(ModulePermission::class);
+    }
+
+    public function hasModuleAccess($module)
+    {
+        return $this->modulePermissions()->where('module_name', $module)->exists();
     }
 
     public function meetingMemos()

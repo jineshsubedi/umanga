@@ -61,6 +61,10 @@ Route::middleware(['auth', 'verified', 'password.change.required'])->group(funct
     // Reports (admin + manager)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+    // Procurement
+    Route::resource('procurement', \App\Http\Controllers\ProcurementRequestController::class);
+    Route::post('/procurement/{procurement}/action', [\App\Http\Controllers\ProcurementRequestController::class, 'action'])->name('procurement.action');
 });
 
 // ─── Super Admin ─────────────────────────────────────────────────────────────
@@ -94,6 +98,9 @@ Route::middleware(['auth', 'password.change.required', 'role:super_admin'])
         Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+        // Workflows
+        Route::resource('workflows', \App\Http\Controllers\SuperAdmin\WorkflowController::class)->except(['show']);
     });
 
 // ─── Admin ───────────────────────────────────────────────────────────────────
@@ -130,3 +137,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require base_path('routes/test.php');

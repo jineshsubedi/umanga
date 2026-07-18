@@ -11,13 +11,14 @@ class MeetingMemo extends Model
 
     protected $fillable = [
         'company_id', 'created_by', 'title', 'content', 'meeting_date', 'status',
-        'checker_id', 'verifier_id', 'approver_id',
+        'checker_id', 'verifier_id', 'approver_id','workflow_id','current_step_id',
     ];
 
     protected $appends = ['formatted_meeting_date'];
 
     protected $casts = [
         'meeting_date' => 'datetime',
+        'current_step_id' => 'integer',
     ];
 
     public function company()
@@ -68,5 +69,15 @@ class MeetingMemo extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    public function workflow()
+    {
+        return $this->belongsTo(Workflow::class, 'workflow_id');
+    }
+
+    public function currentStep()
+    {
+        return $this->belongsTo(WorkflowStep::class, 'current_step_id');
     }
 }

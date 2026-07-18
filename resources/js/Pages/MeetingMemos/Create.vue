@@ -16,9 +16,6 @@ const form = useForm({
     title: '', 
     content: '', 
     meeting_date: new Date(), 
-    checker_id: '',
-    verifier_id: '',
-    approver_id: '',
     attachments: [] 
 });
 
@@ -64,6 +61,11 @@ const submit = () => {
             <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
                     <form @submit.prevent="submit" class="space-y-6">
+                        <!-- Show workflow config error if submit fails -->
+                        <div v-if="form.errors.workflow" class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>{{ form.errors.workflow }}</span>
+                        </div>
                         <div>
                             <InputLabel for="title" value="Title" />
                             <TextInput id="title" type="text" class="mt-1 block w-full dark:text-gray-400" v-model="form.title" required autofocus placeholder="e.g. Q1 Planning " />
@@ -86,44 +88,10 @@ const submit = () => {
                             <InputError class="mt-2" :message="form.errors.content" />
                         </div>
                         
-                        <!-- Reviewers Section -->
+                        <!-- Approval Workflow Note -->
                         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                             <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Approval Workflow</h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div v-if="company.has_checker">
-                                    <InputLabel for="checker_id" value="Checked By (Step 1)" />
-                                    <select id="checker_id" v-model="form.checker_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Checker</option>
-                                        <option v-for="user in users.filter(u => u.is_checker)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.checker_id" />
-                                </div>
-                                
-                                <div v-if="company.has_verifier">
-                                    <InputLabel for="verifier_id" value="Verified By (Step 2)" />
-                                    <select id="verifier_id" v-model="form.verifier_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Verifier</option>
-                                        <option v-for="user in users.filter(u => u.is_verifier)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.verifier_id" />
-                                </div>
-                                
-                                <div v-if="company.has_approver">
-                                    <InputLabel for="approver_id" value="Approved By (Step 3)" />
-                                    <select id="approver_id" v-model="form.approver_id" required class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                                        <option value="" disabled>Select Approver</option>
-                                        <option v-for="user in users.filter(u => u.is_approver)" :key="user.id" :value="user.id">
-                                            {{ user.name }} ({{ user.designation || user.role }})
-                                        </option>
-                                    </select>
-                                    <InputError class="mt-2" :message="form.errors.approver_id" />
-                                </div>
-                            </div>
+                            <p class="text-xs text-gray-500">The memo will be routed automatically through the company's predefined workflow once submitted.</p>
                         </div>
 
                         <div>
@@ -156,7 +124,7 @@ const submit = () => {
                         </div>
                         <div class="flex items-center justify-between pt-2">
                             <Link :href="route('memos.index')" class="text-sm text-gray-600 hover:text-gray-900">Cancel</Link>
-                            <PrimaryButton :disabled="form.processing">Save as Draft</PrimaryButton>
+                            <PrimaryButton :disabled="form.processing">Create & Submit for Approval</PrimaryButton>
                         </div>
                     </form>
                 </div>

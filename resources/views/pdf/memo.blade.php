@@ -113,12 +113,6 @@
     </div>
 
     <div class="signatures">
-        @php
-            $checkerReview = $memo->reviews->where('reviewed_by', $memo->checker_id)->where('status', 'approved')->first();
-            $verifierReview = $memo->reviews->where('reviewed_by', $memo->verifier_id)->where('status', 'approved')->first();
-            $approverReview = $memo->reviews->where('reviewed_by', $memo->approver_id)->where('status', 'approved')->first();
-        @endphp
-
         <div class="signature-box">
             <div class="signature-role">Prepared By</div>
             @if($memo->creator->signature_path)
@@ -142,92 +136,49 @@
             @endif
             <div class="signature-line"></div>
             <div class="signature-name">{{ $memo->creator->name }}</div>
-            <!-- <div style="font-size: 11px;">{{ $memo->created_at->format('M d, Y h:i A') }}</div> -->
         </div>
 
-        @if($checkerReview && $memo->checker)
+        @foreach($memo->reviews->where('status', 'approved')->sortBy(function($r) { return $r->workflowStep->step_order ?? 99; }) as $review)
         <div class="signature-box">
-            <div class="signature-role">Checked By</div>
-            @if($memo->checker->signature_path)
+            <div class="signature-role">{{ $review->workflowStep->step_title ?? 'Approved By' }}</div>
+            
+            @php $base64 = null; @endphp
+            @if($review->signature_data)
+                @if(str_starts_with($review->signature_data, 'data:image'))
+                    @php $base64 = $review->signature_data; @endphp
+                @else
+                    @php
+                        // If it's a path or URL, try to resolve it to base64 for dompdf
+                        $path = str_replace(asset('storage/'), '', $review->signature_data);
+                        $sigPath = storage_path('app/public/' . ltrim($path, '/'));
+                        if(file_exists($sigPath)) {
+                            $type = pathinfo($sigPath, PATHINFO_EXTENSION);
+                            $data = file_get_contents($sigPath);
+                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        }
+                    @endphp
+                @endif
+            @elseif($review->reviewer->signature_path)
                 @php
-                    $sigPath = storage_path('app/public/' . $memo->checker->signature_path);
+                    $sigPath = storage_path('app/public/' . $review->reviewer->signature_path);
                     if(file_exists($sigPath)) {
                         $type = pathinfo($sigPath, PATHINFO_EXTENSION);
                         $data = file_get_contents($sigPath);
                         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    } else {
-                        $base64 = null;
                     }
                 @endphp
-                @if($base64)
-                    <img src="{{ $base64 }}" class="signature-img" />
-                @else
-                    <div style="height: 80px;"></div>
-                @endif
-            @else
-                <div style="height: 80px;"></div>
             @endif
-            <div class="signature-line"></div>
-            <div class="signature-name">{{ $memo->checker->name }}</div>
-            <!-- <div style="font-size: 11px;">{{ $checkerReview->created_at->format('M d, Y h:i A') }}</div> -->
-        </div>
-        @endif
 
-        @if($verifierReview && $memo->verifier)
-        <div class="signature-box">
-            <div class="signature-role">Verified By</div>
-            @if($memo->verifier->signature_path)
-                @php
-                    $sigPath = storage_path('app/public/' . $memo->verifier->signature_path);
-                    if(file_exists($sigPath)) {
-                        $type = pathinfo($sigPath, PATHINFO_EXTENSION);
-                        $data = file_get_contents($sigPath);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    } else {
-                        $base64 = null;
-                    }
-                @endphp
-                @if($base64)
-                    <img src="{{ $base64 }}" class="signature-img" />
-                @else
-                    <div style="height: 80px;"></div>
-                @endif
+            @if($base64)
+                <img src="{{ $base64 }}" class="signature-img" />
             @else
                 <div style="height: 80px;"></div>
             @endif
+            
             <div class="signature-line"></div>
-            <div class="signature-name">{{ $memo->verifier->name }}</div>
-            <!-- <div style="font-size: 11px;">{{ $verifierReview->created_at->format('M d, Y h:i A') }}</div> -->
+            <div class="signature-name">{{ $review->reviewer->name }}</div>
         </div>
-        @endif
-
-        @if($approverReview && $memo->approver)
-        <div class="signature-box">
-            <div class="signature-role">Approved By</div>
-            @if($memo->approver->signature_path)
-                @php
-                    $sigPath = storage_path('app/public/' . $memo->approver->signature_path);
-                    if(file_exists($sigPath)) {
-                        $type = pathinfo($sigPath, PATHINFO_EXTENSION);
-                        $data = file_get_contents($sigPath);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    } else {
-                        $base64 = null;
-                    }
-                @endphp
-                @if($base64)
-                    <img src="{{ $base64 }}" class="signature-img" />
-                @else
-                    <div style="height: 80px;"></div>
-                @endif
-            @else
-                <div style="height: 80px;"></div>
-            @endif
-            <div class="signature-line"></div>
-            <div class="signature-name">{{ $memo->approver->name }}</div>
-            <!-- <div style="font-size: 11px;">{{ $approverReview->created_at->format('M d, Y h:i A') }}</div> -->
-        </div>
-        @endif
+        @endforeach
     </div>
 </body>
 </html>

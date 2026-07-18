@@ -1,25 +1,31 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
-const props = defineProps({ memo: Object });
+const props = defineProps({ memo: Object, canApprove: Boolean });
 const page = usePage();
 const userId = page.props.auth.user.id;
 
-const submit = () => router.post(route('memos.submit', props.memo.id));
+// Use useForm for submit so validation errors (e.g. no workflow configured) are captured
+const submitForm = useForm({});
+const submit = () => submitForm.post(route('memos.submit', props.memo.id));
+
+const duplicateForm = useForm({});
 const duplicate = () => {
     if (confirm('Create a new draft based on this rejected memo?')) {
-        router.post(route('memos.duplicate', props.memo.id));
+        duplicateForm.post(route('memos.duplicate', props.memo.id));
     }
 };
 
-// Determine if current user is the active reviewer
-const isChecker   = computed(() => props.memo.checker_id === userId && props.memo.status === 'pending_checker');
-const isVerifier  = computed(() => props.memo.verifier_id === userId && props.memo.status === 'pending_verifier');
-const isApprover  = computed(() => props.memo.approver_id === userId && props.memo.status === 'pending_approver');
-const canReview   = computed(() => isChecker.value || isVerifier.value || isApprover.value);
-const isCreator   = computed(() => props.memo.created_by === userId);
+const isCreator = computed(() => props.memo.created_by === userId);
+
+const formatApprover = (step) => {
+    if (step.approver_type === 'department_head') return 'Department Head';
+    if (step.approver_type === 'role') return `Role: ${step.approver_value}`;
+    if (step.approver_type === 'specific_user') return `User ID: ${step.approver_value}`;
+    return step.approver_type;
+};
 
 const reviewForm = useForm({ status: '', comment: '' });
 const submitting = ref(false);
@@ -31,21 +37,19 @@ const submitReview = (status) => {
 };
 
 const statusBadge = (s) => ({
-    draft:             'bg-gray-100 text-gray-600',
-    pending_checker:   'bg-yellow-100 text-yellow-700',
-    pending_verifier:  'bg-orange-100 text-orange-700',
-    pending_approver:  'bg-blue-100 text-blue-700',
-    approved:          'bg-green-100 text-green-700',
-    rejected:          'bg-red-100 text-red-700',
+    draft:     'bg-gray-100 text-gray-600',
+    pending:   'bg-yellow-100 text-yellow-700',
+    approved:  'bg-green-100 text-green-700',
+    rejected:  'bg-red-100 text-red-700',
+    returned:  'bg-orange-100 text-orange-700',
 }[s] ?? 'bg-gray-100 text-gray-600');
 
 const stepLabel = (s) => ({
-    draft:             'Draft',
-    pending_checker:   'Pending Checker Review',
-    pending_verifier:  'Pending Verifier Review',
-    pending_approver:  'Pending Final Approval',
-    approved:          'Fully Approved',
-    rejected:          'Rejected',
+    draft:     'Draft',
+    pending:   'Pending Approval',
+    approved:  'Fully Approved',
+    rejected:  'Rejected',
+    returned:  'Returned for Revision',
 }[s] ?? s);
 </script>
 
@@ -70,19 +74,26 @@ const stepLabel = (s) => ({
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
                 <!-- Creator Actions -->
-                <div v-if="isCreator && memo.status === 'draft'" class="flex gap-3">
-                    <Link :href="route('memos.edit', memo.id)"
-                        class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                        Edit
-                    </Link>
-                    <button @click="submit"
-                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
-                        Submit for Approval
-                    </button>
+                <div v-if="isCreator && memo.status === 'draft'" class="flex flex-col gap-2">
+                    <div class="flex gap-3">
+                        <Link :href="route('memos.edit', memo.id)"
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                            Edit
+                        </Link>
+                        <button @click="submit" :disabled="submitForm.processing"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors">
+                            {{ submitForm.processing ? 'Submitting...' : 'Submit for Approval' }}
+                        </button>
+                    </div>
+                    <!-- Show workflow config error if submit fails -->
+                    <div v-if="submitForm.errors.workflow" class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>{{ submitForm.errors.workflow }}</span>
+                    </div>
                 </div>
-                
+
                 <div v-if="isCreator && memo.status === 'rejected'" class="flex gap-3">
-                    <button @click="duplicate"
+                    <button @click="duplicate" :disabled="duplicateForm.processing"
                         class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
                         Revise (Create New Draft)
                     </button>
@@ -100,62 +111,41 @@ const stepLabel = (s) => ({
                 <!-- Workflow Progress -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Approval Workflow</h3>
-                    <div class="flex items-center gap-2">
-                        <!-- Step 1: Checker -->
-                        <div v-if="memo.checker_id" class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                                :class="{
-                                    'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft',
-                                    'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400': memo.status === 'pending_checker',
-                                    'bg-gray-100 text-gray-400': memo.status === 'draft',
-                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.checker_id && r.status === 'rejected'),
-                                }">
-                                {{ memo.checker?.name?.charAt(0) }}
+                    
+                    <div v-if="!memo.workflow" class="text-gray-500 text-sm italic">
+                        Workflow will be determined upon submission.
+                    </div>
+                    
+                    <div v-else class="flex items-center gap-2 overflow-x-auto pb-2">
+                        <template v-for="(step, index) in memo.workflow.steps" :key="step.id">
+                            <div class="flex-1 flex flex-col items-center gap-1 min-w-[100px]">
+                                <!-- Determine step status based on current_step_id and reviews -->
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+                                    :class="{
+                                        'bg-green-100 text-green-700': memo.status === 'approved' || (memo.current_step_id && step.step_order < (memo.workflow.steps.find(s => s.id === memo.current_step_id)?.step_order || 0)),
+                                        'bg-blue-100 text-blue-700 ring-2 ring-blue-400': memo.current_step_id === step.id,
+                                        'bg-gray-100 text-gray-400': memo.status === 'draft' || (memo.current_step_id && step.step_order > (memo.workflow.steps.find(s => s.id === memo.current_step_id)?.step_order || 0)),
+                                        'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.workflow_step_id === step.id && r.status === 'rejected'),
+                                    }">
+                                    {{ step.step_order }}
+                                </div>
+                                <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">
+                                    {{ step.step_title || step.approver_type.replace(/_/g, ' ') }}
+                                </p>
+                                <p v-if="step.approver_value && !step.step_title" class="text-[11px] text-gray-500 truncate max-w-full px-1" :title="step.approver_value">
+                                    {{ step.approver_value }}
+                                </p>
                             </div>
-                            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">{{ memo.checker?.name }}</p>
-                            <p class="text-[11px] text-gray-500">Checker</p>
-                        </div>
-                        <svg v-if="memo.checker_id && (memo.verifier_id || memo.approver_id)" class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        <!-- Step 2: Verifier -->
-                        <div v-if="memo.verifier_id" class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                                :class="{
-                                    'bg-green-100 text-green-700': memo.status !== 'pending_checker' && memo.status !== 'draft' && memo.status !== 'pending_verifier',
-                                    'bg-yellow-100 text-yellow-700 ring-2 ring-yellow-400': memo.status === 'pending_verifier',
-                                    'bg-gray-100 text-gray-400': ['draft','pending_checker'].includes(memo.status),
-                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.verifier_id && r.status === 'rejected'),
-                                }">
-                                {{ memo.verifier?.name?.charAt(0) }}
-                            </div>
-                            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">{{ memo.verifier?.name }}</p>
-                            <p class="text-[11px] text-gray-500">Verifier</p>
-                        </div>
-                        <svg v-if="memo.verifier_id && memo.approver_id" class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        <!-- Step 3: Approver -->
-                        <div v-if="memo.approver_id" class="flex-1 flex flex-col items-center gap-1">
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                                :class="{
-                                    'bg-green-100 text-green-700': memo.status === 'approved',
-                                    'bg-blue-100 text-blue-700 ring-2 ring-blue-400': memo.status === 'pending_approver',
-                                    'bg-gray-100 text-gray-400': ['draft','pending_checker','pending_verifier'].includes(memo.status),
-                                    'bg-red-100 text-red-700': memo.status === 'rejected' && memo.reviews?.find(r => r.reviewed_by === memo.approver_id && r.status === 'rejected'),
-                                }">
-                                {{ memo.approver?.name?.charAt(0) }}
-                            </div>
-                            <p class="text-xs font-medium text-gray-700 dark:text-gray-300 text-center">{{ memo.approver?.name }}</p>
-                            <p class="text-[11px] text-gray-500">Approver</p>
-                        </div>
+                            <svg v-if="index < memo.workflow.steps.length - 1" class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </template>
                     </div>
                 </div>
 
                 <!-- Review Action Panel (for checker / verifier / approver) -->
-                <div v-if="canReview" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-900/30 p-6">
+                <div v-if="canApprove" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-900/30 p-6">
                     <h3 class="font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                         <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Your Review
-                        <span class="text-sm font-normal text-gray-500">
-                            ({{ isChecker ? 'Checking' : isVerifier ? 'Verifying' : 'Final Approval' }})
-                        </span>
                     </h3>
                     <div class="space-y-4">
                         <div>

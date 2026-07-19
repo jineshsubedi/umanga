@@ -17,8 +17,8 @@ class ReportController extends Controller
         $user = auth()->user();
         $role = $user->role;
 
-        // Only super_admin, admin, manager can access
-        abort_unless(in_array($role, ['super_admin', 'admin']), 403);
+        // Only super_admin, staff can access
+        abort_unless(in_array($role, ['super_admin', 'staff']), 403);
 
         $companies = [];
         $users = [];
@@ -28,26 +28,21 @@ class ReportController extends Controller
             $users = User::whereIn('role', ['staff', 'manager', 'admin'])
                 ->select('id', 'name', 'company_id')
                 ->get();
+            $memocreators = User::whereIn('role', ['staff'])
+                ->select('id', 'name', 'company_id')
+                ->get();
+            $memoverifers = User::whereIn('role', ['manager'])
+                ->select('id', 'name', 'company_id')
+                ->get();
+            $memoapprovers = User::whereIn('role', ['admin'])
+                ->select('id', 'name', 'company_id')
+                ->get();
         } else {
-            // Admin/Manager: only their company users
-            $users = User::where('company_id', $user->company_id)
-                ->select('id', 'name')
-                ->get();
-        }
-        $memocreators = User::whereIn('role', ['staff'])
-                ->select('id', 'name', 'company_id')
-                ->get();
-        $memoverifers = User::whereIn('role', ['manager'])
-                ->select('id', 'name', 'company_id')
-                ->get();
-
-        $memoapprovers = User::whereIn('role', ['admin'])
-                ->select('id', 'name', 'company_id')
-                ->get();
-        if ($role !== 'super_admin') {
-            $memocreators = $memocreators->where('company_id', $user->company_id);
-            $memoverifers = $memoverifers->where('company_id', $user->company_id);
-            $memoapprovers = $memoapprovers->where('company_id', $user->company_id);
+            $companies = [];
+            $users = [];
+            $memocreators = [];
+            $memoverifers = [];
+            $memoapprovers = [];
         }
 
         // Determine the correct export route
@@ -71,7 +66,7 @@ class ReportController extends Controller
         $user = auth()->user();
         $role = $user->role;
 
-        abort_unless(in_array($role, ['super_admin', 'admin', 'manager']), 403);
+        abort_unless(in_array($role, ['super_admin', 'staff']), 403);
 
         $request->validate([
             'status'     => 'nullable|string|in:all,draft,pending,approved,rejected',
@@ -86,9 +81,13 @@ class ReportController extends Controller
 
         $filters = $request->only(['status', 'company_id', 'date_from', 'date_to', 'created_by', 'memocreators', 'memoverifers', 'memoapprovers']);
 
-        // Enforce company scope for non-super-admin
+        // Enforce scopes
         if ($role !== 'super_admin') {
             $filters['company_id'] = $user->company_id;
+            $filters['created_by'] = $user->id;
+            $filters['memocreators'] = $user->id;
+            unset($filters['memoverifers']);
+            unset($filters['memoapprovers']);
         }
 
         $filename = 'memo-report-' . now()->format('Y-m-d-His') . '.xlsx';

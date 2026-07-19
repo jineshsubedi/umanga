@@ -21,6 +21,16 @@ class ProcurementRequestController extends Controller
     public function __construct(WorkflowService $workflowService)
     {
         $this->workflowService = $workflowService;
+        $this->middleware(function ($request, $next) {
+            $user = auth()->user();
+            if ($user->isSuperAdmin()) {
+                abort(403);
+            }
+            if (!$user->hasModuleAccess('procurement')) {
+                abort(403, 'You do not have access to the Procurement module.');
+            }
+            return $next($request);
+        });
     }
 
     public function index(Request $request)
@@ -36,6 +46,24 @@ class ProcurementRequestController extends Controller
             $baseQuery->where('company_id', $user->company_id);
         }
 
+        // Apply filters only for manager/admin role as per "while being a role manager/admin he/she can filter the lists"
+        if ($user->role === 'manager' || $user->role === 'admin') {
+            if ($request->search) {
+                $baseQuery->where(function($q) use ($request) {
+                    $q->where('request_number', 'like', "%{$request->search}%")
+                      ->orWhere('item_name', 'like', "%{$request->search}%");
+                });
+            }
+            if ($request->creator) {
+                $baseQuery->whereHas('requester', function ($q) use ($request) {
+                    $q->where('name', 'like', "%{$request->creator}%");
+                });
+            }
+            if ($request->date) {
+                $baseQuery->whereDate('date', $request->date);
+            }
+        }
+
         $counts = [
             'all' => (clone $baseQuery)->count(),
             'pending' => (clone $baseQuery)->where('status', 'Pending')->count(),
@@ -45,13 +73,6 @@ class ProcurementRequestController extends Controller
 
         $query = $baseQuery->with(['company', 'department', 'requester', 'currentStep']);
 
-        if ($request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('request_number', 'like', "%{$request->search}%")
-                  ->orWhere('item_name', 'like', "%{$request->search}%");
-            });
-        }
-        
         if ($request->status) {
             if ($request->status === 'all') {
                 // do nothing
@@ -70,7 +91,7 @@ class ProcurementRequestController extends Controller
             'requests' => $requests,
             'counts' => $counts,
             'status' => $request->status ?? 'all',
-            'filters' => $request->only(['search', 'status'])
+            'filters' => $request->only(['search', 'creator', 'date', 'status'])
         ]);
     }
 

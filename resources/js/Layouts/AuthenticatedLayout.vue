@@ -159,34 +159,34 @@ const navigation = computed(() => {
     let nav = [];
     const modules = user.value?.module_permissions || [];
     
-    // For admins, give access to all core modules + specific admin stuff
-    if (role.value === 'admin') {
-        nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
-        nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
-        if (modules.includes('memo') || modules.length === 0) nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
-        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
-        nav.push({ name: 'Reports', href: route('reports.index'), current: route().current('reports.*'), icon: 'chart' });
-        nav.push({ name: 'Attendance', href: route('admin.attendance.index'), current: route().current('admin.attendance.index'), icon: 'clock' });
-        nav.push({ name: 'Calendar', href: route('admin.calendar.index'), current: route().current('admin.calendar.*'), icon: 'calendar' });
-    }
     if (role.value === 'super_admin') {
         nav.push({ name: 'Dashboard', href: route('super-admin.dashboard'), current: route().current('super-admin.dashboard'), icon: 'dashboard' });
         nav.push({ name: 'Companies', href: route('super-admin.companies.index'), current: route().current('super-admin.companies.*'), icon: 'office' });
         nav.push({ name: 'Workflows', href: route('super-admin.workflows.index'), current: route().current('super-admin.workflows.*'), icon: 'chart' });
         nav.push({ name: 'Users', href: route('super-admin.users.index'), current: route().current('super-admin.users.*'), icon: 'users' });
         nav.push({ name: 'Settings', href: route('super-admin.settings.index'), current: route().current('super-admin.settings.*'), icon: 'settings' });
-    }
-    if (role.value === 'manager') {
+    } else {
+        // Company panel users (admin, manager, staff)
         nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
-        if (modules.includes('memo') || modules.length === 0) nav.push({ name: ' Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
-        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
-        nav.push({ name: 'Calendar', href: route('manager.attendance.index'), current: route().current('manager.attendance.*'), icon: 'clock' });
-    }
-    if (role.value === 'staff') {
-        nav.push({ name: 'Dashboard', href: route('dashboard'), current: route().current('dashboard'), icon: 'dashboard' });
-        if (modules.includes('memo') || modules.length === 0) nav.push({ name: 'My Memos', href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
-        if (modules.includes('procurement') || modules.length === 0) nav.push({ name: ' Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
-        nav.push({ name: 'Calendar', href: route('staff.attendance.index'), current: route().current('staff.attendance.*'), icon: 'clock' });
+        
+        if (role.value === 'admin') {
+            nav.push({ name: 'Manage Users', href: route('admin.users.index'), current: route().current('admin.users.*'), icon: 'users' });
+        }
+        
+        if (modules.includes('memo')) {
+            const label = role.value === 'staff' ? 'My Memos' : 'Memos';
+            nav.push({ name: label, href: route('memos.index'), current: route().current('memos.*'), icon: 'document' });
+        }
+        
+        if (modules.includes('procurement')) {
+            nav.push({ name: 'Procurement', href: route('procurement.index'), current: route().current('procurement.*'), icon: 'document' });
+        }
+        
+        if (role.value === 'staff') {
+            nav.push({ name: 'Reports', href: route('reports.index'), current: route().current('reports.*'), icon: 'chart' });
+        }
+        
+        nav.push({ name: 'Calendar', href: route('calendar.index'), current: route().current('calendar.*'), icon: 'calendar' });
     }
     return nav;
 });
@@ -381,40 +381,7 @@ const navigation = computed(() => {
                         <slot name="header" />
                     </div>
                     <div class="flex items-center gap-3">
-                        <!-- Clock In / Clock Out Widget (hidden for super_admin) -->
-                        <div v-if="role !== 'super_admin'" class="hidden sm:flex items-center gap-2">
 
-                            <!-- Not clocked in yet -->
-                            <button v-if="!todayAttendance"
-                                @click="handleClockIn"
-                                :disabled="geoStatus === 'fetching'"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-60 text-white text-xs font-bold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                <svg v-if="geoStatus !== 'fetching'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <svg v-else class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                                {{ geoStatus === 'fetching' ? 'Locating...' : 'Clock In' }}
-                            </button>
-
-                            <!-- Clocked in, not out yet -->
-                            <div v-else-if="todayAttendance && !todayAttendance.clock_out" class="flex items-center gap-2">
-                                <span class="text-xs text-gray-500 dark:text-gray-400 hidden md:inline">
-                                    In: <strong class="text-indigo-600 dark:text-indigo-400">{{ todayAttendance.formatted_clock_in }}</strong>
-                                </span>
-                                <button
-                                    @click="handleClockOut"
-                                    :disabled="geoStatus === 'fetching'"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:opacity-60 text-white text-xs font-bold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                                    <svg v-if="geoStatus !== 'fetching'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M12 8v4l3 3"/></svg>
-                                    <svg v-else class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                                    {{ geoStatus === 'fetching' ? 'Locating...' : 'Clock Out' }}
-                                </button>
-                            </div>
-
-                            <!-- Fully clocked out -->
-                            <div v-else class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100/80 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 text-xs font-medium rounded-lg backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-inner">
-                                <svg class="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                Done {{ todayAttendance.formatted_clock_out }}
-                            </div>
-                        </div>
 
                         <!-- Role Badge -->
                         <span class="hidden sm:inline-flex text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-transparent dark:border-white/5" :class="roleBadge.cls">

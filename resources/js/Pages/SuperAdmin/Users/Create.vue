@@ -23,6 +23,7 @@ const form = useForm({
     is_verifier: false,
     is_approver: false,
     department: '',
+    permissions: [],
 });
 
 const selectedCompany = computed(() => {
@@ -119,20 +120,17 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <div v-if="selectedCompany && (selectedCompany.has_checker || selectedCompany.has_verifier || selectedCompany.has_approver)" class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Memo Workflow Roles</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div v-if="selectedCompany.has_checker" class="flex items-center gap-2">
-                                        <input id="is_checker" type="checkbox" v-model="form.is_checker" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-                                        <InputLabel for="is_checker" value="Can Check Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
+
+                            <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Module Access Permissions</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <input id="perm_memo" type="checkbox" value="memo" v-model="form.permissions" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                        <InputLabel for="perm_memo" value="Access Memo Module" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
                                     </div>
-                                    <div v-if="selectedCompany.has_verifier" class="flex items-center gap-2">
-                                        <input id="is_verifier" type="checkbox" v-model="form.is_verifier" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-                                        <InputLabel for="is_verifier" value="Can Verify Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
-                                    </div>
-                                    <div v-if="selectedCompany.has_approver" class="flex items-center gap-2">
-                                        <input id="is_approver" type="checkbox" v-model="form.is_approver" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-                                        <InputLabel for="is_approver" value="Can Approve Memos" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
+                                    <div class="flex items-center gap-2">
+                                        <input id="perm_procurement" type="checkbox" value="procurement" v-model="form.permissions" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                        <InputLabel for="perm_procurement" value="Access Procurement Module" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
                                     </div>
                                 </div>
                             </div>

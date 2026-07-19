@@ -4,9 +4,8 @@ import NepaliCalendarGrid from '@/Components/NepaliCalendarGrid.vue';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
-    attendances:      Array,   // [{ date, role, count }]
-    memos:            Array,   // [{ date/meeting_date, count, title, status }]
-    totalUsersByRole: Object,  // { manager: { count }, staff: { count }, admin: { count } }
+    memos:            Array,   // [{ date/meeting_date, title, status }]
+    procurements:     Array,   // [{ date/created_at, item_name, quantity, estimated_cost, status }]
 });
 </script>
 
@@ -25,17 +24,15 @@ const props = defineProps({
                 </div>
                 <div>
                     <h1 class="text-3xl font-extrabold text-white tracking-tight">Company Calendar</h1>
-                    <p class="mt-1 text-purple-200 text-sm">Track attendance and memos across your organization.</p>
+                    <p class="mt-1 text-purple-200 text-sm">Track memos and procurement requests across your organization.</p>
                 </div>
             </div>
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10 pb-12">
             <NepaliCalendarGrid
-                :attendances="attendances"
                 :memos="memos"
-                :total-users-by-role="totalUsersByRole"
-                view-type="admin"
+                :procurements="procurements"
             />
         </div>
     </AuthenticatedLayout>

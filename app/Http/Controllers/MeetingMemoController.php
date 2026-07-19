@@ -19,6 +19,16 @@ class MeetingMemoController extends Controller
     public function __construct(WorkflowService $workflowService)
     {
         $this->workflowService = $workflowService;
+        $this->middleware(function ($request, $next) {
+            $user = auth()->user();
+            if ($user->isSuperAdmin()) {
+                abort(403);
+            }
+            if (!$user->hasModuleAccess('memo')) {
+                abort(403, 'You do not have access to the Memo module.');
+            }
+            return $next($request);
+        });
     }
 
     public function index(Request $request)
@@ -33,13 +43,24 @@ class MeetingMemoController extends Controller
         $query = MeetingMemo::where('company_id', $user->company_id)
             ->with(['creator:id,name', 'latestReview.reviewer:id,name', 'currentStep']);
 
-        // Staff: only their own memos + approved company memos
-        // Managers/Admin: all company memos (they are approvers in workflow)
+        // Staff: only their own memos
         if ($user->role === 'staff') {
-            $query->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhere('status', 'approved');
-            });
+            $query->where('created_by', $user->id);
+        }
+
+        // Apply filters only for manager/admin role as per "while being a role manager/admin he/she can filter the lists"
+        if ($user->role === 'manager' || $user->role === 'admin') {
+            if ($request->search) {
+                $query->where('title', 'like', "%{$request->search}%");
+            }
+            if ($request->creator) {
+                $query->whereHas('creator', function ($q) use ($request) {
+                    $q->where('name', 'like', "%{$request->creator}%");
+                });
+            }
+            if ($request->date) {
+                $query->whereDate('meeting_date', $request->date);
+            }
         }
 
         if ($status !== 'all') {
@@ -51,10 +72,20 @@ class MeetingMemoController extends Controller
         // Counts query — scoped the same way as main query but without status filter
         $countQuery = MeetingMemo::where('company_id', $user->company_id);
         if ($user->role === 'staff') {
-            $countQuery->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                  ->orWhere('status', 'approved');
-            });
+            $countQuery->where('created_by', $user->id);
+        }
+        if ($user->role === 'manager' || $user->role === 'admin') {
+            if ($request->search) {
+                $countQuery->where('title', 'like', "%{$request->search}%");
+            }
+            if ($request->creator) {
+                $countQuery->whereHas('creator', function ($q) use ($request) {
+                    $q->where('name', 'like', "%{$request->creator}%");
+                });
+            }
+            if ($request->date) {
+                $countQuery->whereDate('meeting_date', $request->date);
+            }
         }
 
         $counts = [
@@ -64,7 +95,12 @@ class MeetingMemoController extends Controller
             'rejected' => (clone $countQuery)->where('status', 'rejected')->count(),
         ];
 
-        return Inertia::render('MeetingMemos/Index', compact('memos', 'counts', 'status'));
+        return Inertia::render('MeetingMemos/Index', [
+            'memos' => $memos,
+            'counts' => $counts,
+            'status' => $status,
+            'filters' => $request->only(['search', 'creator', 'date'])
+        ]);
     }
 
     public function create()

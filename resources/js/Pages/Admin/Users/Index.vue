@@ -1,8 +1,74 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
-const props = defineProps({ users: Array });
+const props = defineProps({
+    users: Array,
+    filters: {
+        type: Object,
+        default: () => ({ search: '', role: '', status: '', department: '' })
+    },
+    departments: {
+        type: Array,
+        default: () => []
+    }
+});
+
+const search = ref(props.filters?.search || '');
+const role = ref(props.filters?.role || '');
+const status = ref(props.filters?.status || '');
+const department = ref(props.filters?.department || '');
+
+const activeElementId = ref(null);
+let filterTimeout = null;
+
+const runFilter = () => {
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.id === 'search-input' || activeEl.id === 'role-select' || activeEl.id === 'status-select' || activeEl.id === 'department-select')) {
+        activeElementId.value = activeEl.id;
+    } else {
+        activeElementId.value = null;
+    }
+
+    router.get(route('admin.users.index'), {
+        search: search.value,
+        role: role.value,
+        status: status.value,
+        department: department.value,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+        only: ['users', 'filters'],
+        onSuccess: () => {
+            if (activeElementId.value) {
+                setTimeout(() => {
+                    const el = document.getElementById(activeElementId.value);
+                    if (el) {
+                        el.focus();
+                        if (el.setSelectionRange && (el.type === 'text' || el.type === 'search')) {
+                            const valLen = el.value.length;
+                            el.setSelectionRange(valLen, valLen);
+                        }
+                    }
+                }, 50);
+            }
+        }
+    });
+};
+
+watch([search, role, status, department], () => {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(runFilter, 300);
+});
+
+const clearFilters = () => {
+    search.value = '';
+    role.value = '';
+    status.value = '';
+    department.value = '';
+};
 
 const toggleStatus = (user) => {
     if (confirm(`Are you sure you want to ${user.status === 'active' ? 'deactivate' : 'activate'} ${user.name}?`)) {
@@ -69,6 +135,48 @@ const toggleStatus = (user) => {
                 </div>
             </div>
 
+            <!-- Filters Section -->
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-5 rounded-2xl shadow-md border border-white/30 dark:border-gray-700 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Search Name/Email</label>
+                    <input type="text" v-model="search" id="search-input" placeholder="Search user..."
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Filter Role</label>
+                    <select v-model="role" id="role-select"
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Filter Status</label>
+                    <select v-model="status" id="status-select"
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Department</label>
+                    <select v-model="department" id="department-select"
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5">
+                        <option value="">All Departments</option>
+                        <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <button @click="clearFilters" 
+                        class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-xl transition-all">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+
             <!-- Users Table -->
             <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
@@ -129,7 +237,7 @@ const toggleStatus = (user) => {
                                 <td colspan="6" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                                         <svg class="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                                        <p class="font-medium">No users yet. Create your first user.</p>
+                                        <p class="font-medium">No users found matching filters.</p>
                                     </div>
                                 </td>
                             </tr>

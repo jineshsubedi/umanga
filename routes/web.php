@@ -48,9 +48,6 @@ Route::middleware(['auth', 'password.change.required'])->group(function () {
 
 // ─── Attendance & Memos (all authenticated non-superadmin users) ────────────────────
 Route::middleware(['auth', 'verified', 'password.change.required'])->group(function () {
-    Route::post('/attendance/clock-in',  [\App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
-    Route::post('/attendance/clock-out', [\App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
-
     Route::resource('memos', MeetingMemoController::class);
     Route::post('/memos/{memo}/submit', [MeetingMemoController::class, 'submit'])->name('memos.submit');
     Route::post('/memos/{memo}/review', [MeetingMemoController::class, 'review'])->name('memos.review');
@@ -65,6 +62,9 @@ Route::middleware(['auth', 'verified', 'password.change.required'])->group(funct
     // Procurement
     Route::resource('procurement', \App\Http\Controllers\ProcurementRequestController::class);
     Route::post('/procurement/{procurement}/action', [\App\Http\Controllers\ProcurementRequestController::class, 'action'])->name('procurement.action');
+
+    // Calendar (all company users)
+    Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
 });
 
 // ─── Super Admin ─────────────────────────────────────────────────────────────
@@ -108,27 +108,8 @@ Route::middleware(['auth', 'verified', 'password.change.required', 'role:admin']
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class)->except(['show']);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-        Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendance.index');
-        Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar.index');
-    });
-
-// ─── Manager ─────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'password.change.required', 'role:manager'])
-    ->prefix('manager')
-    ->name('manager.')
-    ->group(function () {
-        Route::get('/attendance', [\App\Http\Controllers\Manager\AttendanceController::class, 'index'])->name('attendance.index');
-    });
-
-// ─── Staff ──────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'password.change.required', 'role:staff'])
-    ->prefix('staff')
-    ->name('staff.')
-    ->group(function () {
-        Route::get('/attendance', [\App\Http\Controllers\Staff\AttendanceController::class, 'index'])->name('attendance.index');
     });
 
 Route::middleware(['auth', 'verified'])->group(function () {

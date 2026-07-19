@@ -3,10 +3,8 @@ import { ref, computed } from 'vue';
 import NepaliDate from 'nepali-date';
 
 const props = defineProps({
-    attendances:     { type: Array,  default: () => [] },
     memos:           { type: Array,  default: () => [] },
-    totalUsersByRole:{ type: Object, default: () => ({}) },
-    viewType:        { type: String, default: 'admin' }, // 'admin' | 'manager' | 'staff'
+    procurements:    { type: Array,  default: () => [] },
 });
 const emit = defineEmits(['date-click']);
 
@@ -70,28 +68,22 @@ const enRange = computed(()=>{
 
 const selectedDateStr = ref(todayStr.value);
 
-// attendance lookup: keyed by date string
-const attByDate = computed(()=>{
-    const map={};
-    props.attendances.forEach(a=>{ const s=toDateStr(a.date||a.clock_in); if(s){ (map[s]=map[s]||[]).push(a); } });
-    return map;
-});
 const memosByDate = computed(()=>{
     const map={};
     props.memos.forEach(m=>{ const s=toDateStr(m.meeting_date||m.date); if(s){ (map[s]=map[s]||[]).push(m); } });
     return map;
 });
 
-const totalUsers = computed(()=> Object.values(props.totalUsersByRole||{}).reduce((s,r)=>s+(r.count||0),0) );
+const procurementsByDate = computed(()=>{
+    const map={};
+    props.procurements.forEach(p=>{ const s=toDateStr(p.date||p.created_at); if(s){ (map[s]=map[s]||[]).push(p); } });
+    return map;
+});
 
 const getDayInfo = (dateStr)=>{
-    const atts = attByDate.value[dateStr]||[];
     const mems = memosByDate.value[dateStr]||[];
-    if(props.viewType==='admin'){
-        const present = atts.reduce((s,a)=>s+(a.count||1),0);
-        return { present, absent:Math.max(0,totalUsers.value-present), memos:mems };
-    }
-    return { present:atts.length>0, attendance:atts[0]||null, memos:mems };
+    const procs = procurementsByDate.value[dateStr]||[];
+    return { memos:mems, procurements:procs };
 };
 
 const selectedInfo = computed(()=> getDayInfo(selectedDateStr.value));
@@ -106,13 +98,20 @@ const onDayClick=(dateStr)=>{ selectedDateStr.value=dateStr; emit('date-click',d
 
 const statusColors={
     pending:'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
+    Pending:'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
     approved:'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300',
+    Approved:'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300',
     rejected:'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
+    Rejected:'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
+    Returned:'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800 text-orange-800 dark:text-orange-300',
     draft:'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300',
 };
-const badgeDot={ pending:'bg-amber-400', approved:'bg-blue-500', rejected:'bg-red-400', draft:'bg-gray-400' };
-
-const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }catch{ return t; } };
+const badgeDot={ 
+    pending:'bg-amber-400', Pending:'bg-amber-400',
+    approved:'bg-blue-500', Approved:'bg-blue-500',
+    rejected:'bg-red-400', Rejected:'bg-red-400',
+    Returned:'bg-orange-400', draft:'bg-gray-400' 
+};
 </script>
 
 <template>
@@ -159,7 +158,7 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
         <!-- Grid -->
         <div class="grid grid-cols-7 dark:bg-gray-700" style="gap:1px;background:#e5e7eb;">
             <div v-for="(day,idx) in calendarGrid" :key="idx"
-                class="relative min-h-[120px] md:min-h-[130px] bg-white dark:bg-gray-800 flex flex-col p-1.5 group transition-colors"
+                class="relative min-h-[120px] md:min-h-[130px] bg-white dark:bg-gray-800 flex flex-col p-1.5 group transition-colors animate-fade-in"
                 :class="{
                     'opacity-0 pointer-events-none':day.empty,
                     'bg-orange-50 dark:bg-orange-900/10':!day.empty&&day.englishDateStr===todayStr,
@@ -182,35 +181,17 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
                     <!-- Today ring -->
                     <div v-if="day.englishDateStr===todayStr" class="absolute top-1 left-1 w-7 h-7 rounded-full border-2 border-orange-400 pointer-events-none"></div>
 
-                    <!-- Admin badges -->
-                    <div v-if="viewType==='admin'" class="mt-auto space-y-0.5">
-                        <template v-if="getDayInfo(day.englishDateStr).present>0||getDayInfo(day.englishDateStr).absent>0">
-                            <div class="flex items-center justify-between text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 font-bold border border-emerald-100 dark:border-emerald-800/50">
-                                <span class="text-emerald-700 dark:text-emerald-400">P:{{ getDayInfo(day.englishDateStr).present }}</span>
-                                <span class="text-rose-600 dark:text-rose-400">A:{{ getDayInfo(day.englishDateStr).absent }}</span>
-                            </div>
-                        </template>
+                    <!-- Badges (Memos & Procurements) -->
+                    <div class="mt-auto space-y-0.5 z-10">
                         <div v-if="getDayInfo(day.englishDateStr).memos.length>0"
                             class="flex items-center gap-1 text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 font-bold border border-purple-100 dark:border-purple-800/50">
                             <span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span>
                             {{ getDayInfo(day.englishDateStr).memos.length }} Memo{{ getDayInfo(day.englishDateStr).memos.length>1?'s':'' }}
                         </div>
-                    </div>
-
-                    <!-- Staff/Manager badges -->
-                    <div v-else class="mt-auto space-y-0.5">
-                        <div v-if="getDayInfo(day.englishDateStr).present"
-                            class="text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-100 dark:border-emerald-800/50">
-                            ✓ Present
-                        </div>
-                        <div v-else-if="day.englishDateStr<todayStr&&!day.isSat"
-                            class="text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 font-bold border border-rose-100 dark:border-rose-800/50">
-                            Absent
-                        </div>
-                        <div v-if="getDayInfo(day.englishDateStr).memos.length>0"
-                            class="flex items-center gap-1 text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 font-bold border border-purple-100 dark:border-purple-800/50">
-                            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span>
-                            {{ getDayInfo(day.englishDateStr).memos.length }} Memo{{ getDayInfo(day.englishDateStr).memos.length>1?'s':'' }}
+                        <div v-if="getDayInfo(day.englishDateStr).procurements.length>0"
+                            class="flex items-center gap-1 text-[9px] md:text-[10px] px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-100 dark:border-emerald-800/50">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                            {{ getDayInfo(day.englishDateStr).procurements.length }} Request{{ getDayInfo(day.englishDateStr).procurements.length>1?'s':'' }}
                         </div>
                     </div>
 
@@ -222,24 +203,11 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
 
         <!-- Legend -->
         <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-x-5 gap-y-1.5 bg-gray-50/50 dark:bg-gray-800/30">
-            <template v-if="viewType==='admin'">
-                <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Present (P)
-                </div>
-                <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Absent (A)
-                </div>
-            </template>
-            <template v-else>
-                <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Present
-                </div>
-                <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Absent
-                </div>
-            </template>
             <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
                 <span class="w-2 h-2 rounded-full bg-purple-500"></span> Memos
+            </div>
+            <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Procurement Requests
             </div>
             <div class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
                 <span class="w-2 h-2 rounded-full bg-orange-400"></span> Today
@@ -251,7 +219,7 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
     </div>
 
     <!-- ── Day Detail Panel ────────────────────────────────────────── -->
-    <div v-if="selectedDateStr" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 dark:border-gray-700 overflow-hidden">
+    <div v-if="selectedDateStr" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl border border-white/30 dark:border-gray-700 overflow-hidden transition-all duration-300">
 
         <!-- Panel header -->
         <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
@@ -266,61 +234,36 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
 
         <div class="p-6 grid md:grid-cols-2 gap-6">
 
-            <!-- Attendance -->
+            <!-- Procurement Requests Section -->
             <div>
                 <h4 class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Attendance
+                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    Procurement Requests
+                    <span class="ml-auto px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-lg">{{ selectedInfo.procurements?.length||0 }}</span>
                 </h4>
-
-                <!-- Admin view -->
-                <div v-if="viewType==='admin'" class="grid grid-cols-2 gap-3">
-                    <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-2xl text-center">
-                        <p class="text-3xl font-black text-emerald-600 dark:text-emerald-400">{{ selectedInfo.present }}</p>
-                        <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Present</p>
-                    </div>
-                    <div class="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/50 rounded-2xl text-center">
-                        <p class="text-3xl font-black text-rose-600 dark:text-rose-400">{{ selectedInfo.absent }}</p>
-                        <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">Absent</p>
-                    </div>
-                    <div v-if="totalUsers>0" class="col-span-2">
-                        <div class="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                            <span>Attendance Rate</span>
-                            <span>{{ totalUsers ? Math.round((selectedInfo.present/totalUsers)*100) : 0 }}%</span>
+                <div v-if="selectedInfo.procurements?.length>0" class="space-y-2">
+                    <div v-for="proc in selectedInfo.procurements" :key="proc.id"
+                        class="flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-md"
+                        :class="statusColors[proc.status]||statusColors.draft">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="w-2 h-2 rounded-full flex-shrink-0" :class="badgeDot[proc.status]||'bg-gray-400'"></span>
+                            <div class="truncate">
+                                <p class="text-sm font-bold truncate">{{ proc.item_name }}</p>
+                                <p class="text-[10px] opacity-75 truncate">Qty: {{ proc.quantity }} • Est. Cost: रू {{ proc.estimated_cost }}</p>
+                            </div>
                         </div>
-                        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div class="h-full bg-emerald-500 rounded-full transition-all duration-700"
-                                :style="{width: totalUsers ? Math.round((selectedInfo.present/totalUsers)*100)+'%' : '0%'}"></div>
-                        </div>
+                        <span class="ml-2 flex-shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border" :class="statusColors[proc.status]||statusColors.draft">
+                            {{ proc.status }}
+                        </span>
                     </div>
                 </div>
-
-                <!-- Staff/Manager view -->
-                <div v-else>
-                    <div v-if="selectedInfo.present" class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                            <span class="text-sm font-bold text-emerald-700 dark:text-emerald-400">Present</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Clock In</p>
-                                <p class="text-base font-black text-gray-900 dark:text-white">{{ formatTime(selectedInfo.attendance?.clock_in) }}</p>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Clock Out</p>
-                                <p class="text-base font-black text-gray-900 dark:text-white">{{ formatTime(selectedInfo.attendance?.clock_out) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else class="flex items-center gap-3 p-4 bg-rose-50/50 dark:bg-rose-900/10 rounded-2xl border border-rose-100 dark:border-rose-800/50">
-                        <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
-                        <span class="text-sm font-semibold text-rose-600 dark:text-rose-400">No attendance record for this day</span>
-                    </div>
+                <div v-else class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-700/20 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+                    <svg class="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <p class="text-sm font-semibold text-gray-400 dark:text-gray-500">No procurement requests for this day</p>
                 </div>
             </div>
 
-            <!-- Memos -->
+            <!-- Memos Section -->
             <div>
                 <h4 class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -329,7 +272,7 @@ const formatTime=(t)=>{ if(!t) return '-'; try{ return new Date(t).toLocaleTimeS
                 </h4>
                 <div v-if="selectedInfo.memos?.length>0" class="space-y-2">
                     <div v-for="memo in selectedInfo.memos" :key="memo.id"
-                        class="flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-sm"
+                        class="flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-md"
                         :class="statusColors[memo.status]||statusColors.draft">
                         <div class="flex items-center gap-2 min-w-0">
                             <span class="w-2 h-2 rounded-full flex-shrink-0" :class="badgeDot[memo.status]||'bg-gray-400'"></span>

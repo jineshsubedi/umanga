@@ -10,7 +10,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if (in_array($user->role, ['manager', 'staff'])) {
+        if ($user->role !== 'super_admin') {
             $memos = \App\Models\MeetingMemo::with(['creator', 'currentStep'])
                 ->where('company_id', $user->company_id)
                 ->latest()
@@ -60,14 +60,62 @@ class DashboardController extends Controller
                     return $activity;
                 });
 
+            $memosQuery = \App\Models\MeetingMemo::where('company_id', $user->company_id);
+            $procurementsQuery = \App\Models\ProcurementRequest::where('company_id', $user->company_id);
+
+            if ($user->role === 'staff') {
+                $memosQuery->where('created_by', $user->id);
+                $procurementsQuery->where('requested_by', $user->id);
+            }
+
+            $memosStats = [
+                'total' => (clone $memosQuery)->count(),
+                'pending' => (clone $memosQuery)->where('status', 'like', 'pending%')->count(),
+                'approved' => (clone $memosQuery)->where('status', 'approved')->count(),
+                'rejected' => (clone $memosQuery)->where('status', 'rejected')->count(),
+            ];
+
+            $procurementsStats = [
+                'total' => (clone $procurementsQuery)->count(),
+                'pending' => (clone $procurementsQuery)->where('status', 'Pending')->count(),
+                'approved' => (clone $procurementsQuery)->where('status', 'Approved')->count(),
+                'rejected' => (clone $procurementsQuery)->whereIn('status', ['Rejected', 'Returned'])->count(),
+            ];
+
+            $chartData = [];
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+
+                $memosChartQuery = \App\Models\MeetingMemo::where('company_id', $user->company_id)
+                    ->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+
+                $procurementsChartQuery = \App\Models\ProcurementRequest::where('company_id', $user->company_id)
+                    ->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+
+                if ($user->role === 'staff') {
+                    $memosChartQuery->where('created_by', $user->id);
+                    $procurementsChartQuery->where('requested_by', $user->id);
+                }
+
+                $chartData[] = [
+                    'label' => $date->format('M'),
+                    'memos' => $memosChartQuery->count(),
+                    'procurements' => $procurementsChartQuery->count(),
+                ];
+            }
+
             return \Inertia\Inertia::render('Dashboard', [
-                'activities' => $activities
+                'activities' => $activities,
+                'memosStats' => $memosStats,
+                'procurementsStats' => $procurementsStats,
+                'chartData' => $chartData,
             ]);
         }
 
         return match ($user->role) {
             'super_admin' => redirect()->route('super-admin.dashboard'),
-            'admin'       => redirect()->route('admin.dashboard'),
             default       => abort(403),
         };
     }

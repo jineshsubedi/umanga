@@ -65,12 +65,20 @@ class UserController extends Controller
             'is_verifier'=> 'boolean',
             'is_approver'=> 'boolean',
             'department' => 'nullable|string|max:255',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'in:memo,procurement',
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make('password');
         $validated['status'] = 'active';
 
-        $user = User::create($validated);
+        $user = User::create(collect($validated)->except('permissions')->toArray());
+
+        if ($request->has('permissions')) {
+            foreach ($request->permissions as $perm) {
+                $user->modulePermissions()->create(['module_name' => $perm]);
+            }
+        }
 
         event(new \Illuminate\Auth\Events\Registered($user));
 
@@ -149,7 +157,11 @@ class UserController extends Controller
     {
         abort_if($user->role === 'super_admin', 403);
         $companies = Company::where('status', 'active')->orderBy('name')->get();
-        return Inertia::render('SuperAdmin/Users/Edit', compact('user', 'companies'));
+        return Inertia::render('SuperAdmin/Users/Edit', [
+            'user' => $user,
+            'companies' => $companies,
+            'permissions' => $user->modulePermissions->pluck('module_name')->toArray()
+        ]);
     }
 
     public function update(Request $request, User $user)
@@ -167,9 +179,18 @@ class UserController extends Controller
             'is_verifier'=> 'boolean',
             'is_approver'=> 'boolean',
             'department' => 'nullable|string|max:255',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'in:memo,procurement',
         ]);
 
-        $user->update($validated);
+        $user->update(collect($validated)->except('permissions')->toArray());
+
+        $user->modulePermissions()->delete();
+        if ($request->has('permissions')) {
+            foreach ($request->permissions as $perm) {
+                $user->modulePermissions()->create(['module_name' => $perm]);
+            }
+        }
 
         return redirect()->route('super-admin.users.index')
             ->with('success', 'User updated successfully.');

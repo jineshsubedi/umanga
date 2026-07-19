@@ -171,7 +171,7 @@ const statuses = [
                         </div>
 
                         <!-- Row 3: Users -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <div v-if="isSuperAdmin" class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Created By</label>
                                 <select v-model="form.memocreators"
@@ -196,6 +196,9 @@ const statuses = [
                                     <option v-for="u in filteredMemoapprovers" :key="u.id" :value="u.id">{{ u.name }}</option>
                                 </select>
                             </div>
+                        </div>
+                        <div v-else class="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl p-4 text-sm text-indigo-700 dark:text-indigo-400 font-semibold">
+                            🔒 Note: As a staff member, your generated reports are automatically scoped strictly to your own memos.
                         </div>
                     </div>
 

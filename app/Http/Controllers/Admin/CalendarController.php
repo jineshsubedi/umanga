@@ -11,36 +11,25 @@ class CalendarController extends Controller
 {
     public function index(Request $request)
     {
-        $companyId = auth()->user()->company_id;
+        $user = auth()->user();
+        $companyId = $user->company_id;
 
-        // Get attendances grouped by date and role
-        $attendances = DB::table('attendances')
-            ->join('users', 'attendances.user_id', '=', 'users.id')
-            ->where('users.company_id', $companyId)
-            ->selectRaw('attendances.date, users.role, count(*) as count')
-            ->groupBy('attendances.date', 'users.role')
-            ->get();
-
-        // Get memos grouped by date (exclude draft)
+        // Get memos (exclude draft)
         $memos = DB::table('meeting_memos')
             ->where('company_id', $companyId)
             ->where('status', '!=', 'draft')
-            ->selectRaw('DATE(meeting_date) as date, count(*) as count')
-            ->groupBy(DB::raw('DATE(meeting_date)'))
+            ->select('id', 'title', 'status', 'meeting_date')
             ->get();
 
-        // Total active users by role to calculate absentees
-        $totalUsersByRole = DB::table('users')
+        // Get procurement requests
+        $procurements = DB::table('procurement_requests')
             ->where('company_id', $companyId)
-            ->where('status', 'active')
-            ->selectRaw('role, count(*) as count')
-            ->groupBy('role')
-            ->get()->keyBy('role');
+            ->select('id', 'item_name', 'quantity', 'estimated_cost', 'status', 'date', 'created_at')
+            ->get();
 
         return Inertia::render('Admin/Calendar/Index', [
-            'attendances' => $attendances,
             'memos' => $memos,
-            'totalUsersByRole' => $totalUsersByRole,
+            'procurements' => $procurements,
         ]);
     }
 }

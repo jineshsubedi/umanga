@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     requests: Object,
@@ -11,6 +11,8 @@ const props = defineProps({
 });
 
 const page = usePage();
+const currentUser = page.props.auth.user;
+const isAuthorized = currentUser.role === 'manager' || currentUser.role === 'admin';
 
 const statusConfig = {
     Pending:   { cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800', dot: 'bg-yellow-400' },
@@ -27,6 +29,63 @@ const tabs = computed(() => [
     { name: 'Approved', value: 'approved', count: props.counts.approved },
     { name: 'Rejected/Returned', value: 'rejected', count: props.counts.rejected },
 ]);
+
+const search = ref(props.filters?.search || '');
+const creator = ref(props.filters?.creator || '');
+const date = ref(props.filters?.date || '');
+
+const activeElementId = ref(null);
+const isLoading = ref(false);
+let filterTimeout = null;
+
+const runFilter = () => {
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.id === 'search-input' || activeEl.id === 'creator-input' || activeEl.id === 'date-input')) {
+        activeElementId.value = activeEl.id;
+    } else {
+        activeElementId.value = null;
+    }
+
+    isLoading.value = true;
+
+    router.get(route('procurement.index'), {
+        status: props.status,
+        search: search.value,
+        creator: creator.value,
+        date: date.value,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+        only: ['requests', 'counts', 'status', 'filters'],
+        onFinish: () => {
+            isLoading.value = false;
+            if (activeElementId.value) {
+                setTimeout(() => {
+                    const el = document.getElementById(activeElementId.value);
+                    if (el) {
+                        el.focus();
+                        if (el.setSelectionRange && (el.type === 'text' || el.type === 'search')) {
+                            const valLen = el.value.length;
+                            el.setSelectionRange(valLen, valLen);
+                        }
+                    }
+                }, 10);
+            }
+        }
+    });
+};
+
+watch([search, creator, date], () => {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(runFilter, 300);
+});
+
+const clearFilters = () => {
+    search.value = '';
+    creator.value = '';
+    date.value = '';
+};
 </script>
 
 <template>
@@ -59,7 +118,9 @@ const tabs = computed(() => [
             <!-- Filter Tabs -->
             <div class="flex space-x-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-1.5 rounded-2xl shadow-lg border border-white/30 dark:border-gray-700 w-fit mb-6 overflow-x-auto max-w-full">
                 <Link v-for="tab in tabs" :key="tab.value"
-                    :href="route('procurement.index', { status: tab.value })"
+                    :href="route('procurement.index', { status: tab.value, search: search, creator: creator, date: date })"
+                    preserve-state
+                    preserve-scroll
                     class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 whitespace-nowrap"
                     :class="status === tab.value
                         ? 'bg-gradient-to-r from-[#7c3aed] to-[#b026ff] text-white shadow-md'
@@ -70,8 +131,34 @@ const tabs = computed(() => [
                 </Link>
             </div>
 
+            <!-- Filters (Only for manager/admin) -->
+            <div v-if="isAuthorized" 
+                class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-5 rounded-2xl shadow-md border border-white/30 dark:border-gray-700 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Search Item Name</label>
+                    <input type="text" v-model="search" id="search-input" placeholder="Search item or number..."
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Search Requester</label>
+                    <input type="text" v-model="creator" id="creator-input" placeholder="Search by requester..."
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Date Selection</label>
+                    <input type="date" v-model="date" id="date-input"
+                        class="w-full bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-[#7c3aed] focus:border-[#7c3aed] dark:text-white px-4 py-2.5" />
+                </div>
+                <div>
+                    <button @click="clearFilters" 
+                        class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-bold rounded-xl transition-all">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+
             <!-- Procurement Cards -->
-            <div class="space-y-4">
+            <div class="space-y-4" :class="{ 'opacity-50 pointer-events-none transition-opacity duration-150': isLoading }">
                 <div v-for="req in requests.data" :key="req.id"
                     class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-md border border-white/30 dark:border-gray-700 p-5 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group">
                     <div class="flex items-start justify-between gap-4">

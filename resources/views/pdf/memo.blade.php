@@ -149,7 +149,11 @@
                 @else
                     @php
                         // If it's a path or URL, try to resolve it to base64 for dompdf
-                        $path = str_replace(asset('storage/'), '', $review->signature_data);
+                        $parsedUrl = parse_url($review->signature_data);
+                        $path = $parsedUrl['path'] ?? $review->signature_data;
+                        if (strpos($path, '/storage/') !== false) {
+                            $path = substr($path, strpos($path, '/storage/') + 9);
+                        }
                         $sigPath = storage_path('app/public/' . ltrim($path, '/'));
                         if(file_exists($sigPath)) {
                             $type = pathinfo($sigPath, PATHINFO_EXTENSION);

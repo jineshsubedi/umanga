@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\MeetingMemoController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuperAdmin\MeetingMemoController as SuperAdminMeetingMemoController;
+use App\Http\Controllers\SuperAdmin\ProcurementRequestController as SuperAdminProcurementRequestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -94,6 +95,10 @@ Route::middleware(['auth', 'password.change.required', 'role:super_admin'])
         Route::get('/meeting-memos', [SuperAdminMeetingMemoController::class, 'index'])->name('meeting-memos.index');
         Route::get('/meeting-memos/{meetingMemo}', [SuperAdminMeetingMemoController::class, 'show'])->name('meeting-memos.show');
         Route::get('/meeting-memos/{meetingMemo}/pdf', [SuperAdminMeetingMemoController::class, 'downloadPdf'])->name('meeting-memos.pdf');
+        
+        Route::get('/procurements', [SuperAdminProcurementRequestController::class, 'index'])->name('procurements.index');
+        Route::get('/procurements/{procurementRequest}', [SuperAdminProcurementRequestController::class, 'show'])->name('procurements.show');
+        Route::get('/procurements/{procurementRequest}/pdf', [SuperAdminProcurementRequestController::class, 'downloadPdf'])->name('procurements.pdf');
         Route::get('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

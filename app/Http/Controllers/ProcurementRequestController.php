@@ -85,7 +85,7 @@ class ProcurementRequestController extends Controller
             }
         }
 
-        $requests = $query->latest()->paginate(15)->withQueryString();
+        $requests = $query->orderByDesc('id')->paginate(15)->withQueryString();
 
         return Inertia::render('Procurement/Index', [
             'requests' => $requests,

@@ -67,7 +67,7 @@ class MeetingMemoController extends Controller
             $query->where('status', $status);
         }
 
-        $memos = $query->latest()->paginate(10)->withQueryString();
+        $memos = $query->orderByDesc('id')->paginate(10)->withQueryString();
 
         // Counts query — scoped the same way as main query but without status filter
         $countQuery = MeetingMemo::where('company_id', $user->company_id);

@@ -48,7 +48,7 @@ class MeetingMemoController extends Controller
             });
         }
 
-        $memos = $query->latest()->paginate(10)->withQueryString();
+        $memos = $query->orderByDesc('id')->paginate(10)->withQueryString();
 
         $countsQuery = MeetingMemo::where('status', '!=', 'draft');
         

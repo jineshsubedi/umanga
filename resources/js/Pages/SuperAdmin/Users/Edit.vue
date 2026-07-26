@@ -40,6 +40,19 @@ const selectedCompany = computed(() => {
     return props.companies.find(c => c.id === form.company_id);
 });
 
+import { watch } from 'vue';
+
+watch(() => form.company_id, (newVal, oldVal) => {
+    if (newVal !== oldVal && oldVal !== '') {
+        if (selectedCompany.value) {
+            const allowedModules = selectedCompany.value.modules || [];
+            form.permissions = form.permissions.filter(p => allowedModules.includes(p));
+        } else {
+            form.permissions = [];
+        }
+    }
+});
+
 const submit = () => {
     form.put(route('super-admin.users.update', props.user.id));
 };
@@ -127,12 +140,12 @@ const submit = () => {
                         <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                             <h3 class="text-sm font-medium text-gray-900 dark:text-gray-300">Module Access Permissions</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="flex items-center gap-2">
-                                    <input id="perm_memo" type="checkbox" value="memo" v-model="form.permissions" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                <div class="flex items-center gap-2" :class="{'opacity-50': !selectedCompany || !(selectedCompany.modules || []).includes('memo')}">
+                                    <input id="perm_memo" type="checkbox" value="memo" v-model="form.permissions" :disabled="!selectedCompany || !(selectedCompany.modules || []).includes('memo')" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 disabled:bg-gray-200" />
                                     <InputLabel for="perm_memo" value="Access Memo Module" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <input id="perm_procurement" type="checkbox" value="procurement" v-model="form.permissions" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+                                <div class="flex items-center gap-2" :class="{'opacity-50': !selectedCompany || !(selectedCompany.modules || []).includes('procurement')}">
+                                    <input id="perm_procurement" type="checkbox" value="procurement" v-model="form.permissions" :disabled="!selectedCompany || !(selectedCompany.modules || []).includes('procurement')" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 disabled:bg-gray-200" />
                                     <InputLabel for="perm_procurement" value="Access Procurement Module" class="mb-0 font-semibold text-gray-700 dark:text-gray-300" />
                                 </div>
                             </div>

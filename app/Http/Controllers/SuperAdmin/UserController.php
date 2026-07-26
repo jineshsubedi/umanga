@@ -38,7 +38,7 @@ class UserController extends Controller
         }
 
         $users = $query->get();
-        $companies = Company::select('id', 'name')->orderBy('name')->get();
+        $companies = Company::select('id', 'name', 'modules')->orderBy('name')->get();
 
         return Inertia::render('SuperAdmin/Users/Index', [
             'users'     => $users,
@@ -49,7 +49,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $companies = Company::where('status', 'active')->orderBy('name')->get();
+        $companies = Company::where('status', 'active')->select('id', 'name', 'modules')->orderBy('name')->get();
         return Inertia::render('SuperAdmin/Users/Create', compact('companies'));
     }
 
@@ -75,8 +75,12 @@ class UserController extends Controller
         $user = User::create(collect($validated)->except('permissions')->toArray());
 
         if ($request->has('permissions')) {
+            $company = Company::find($request->company_id);
+            $companyModules = $company->modules ?? [];
             foreach ($request->permissions as $perm) {
-                $user->modulePermissions()->create(['module_name' => $perm]);
+                if (in_array($perm, $companyModules)) {
+                    $user->modulePermissions()->create(['module_name' => $perm]);
+                }
             }
         }
 
@@ -156,7 +160,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         abort_if($user->role === 'super_admin', 403);
-        $companies = Company::where('status', 'active')->orderBy('name')->get();
+        $companies = Company::where('status', 'active')->select('id', 'name', 'modules')->orderBy('name')->get();
         return Inertia::render('SuperAdmin/Users/Edit', [
             'user' => $user,
             'companies' => $companies,
@@ -187,8 +191,12 @@ class UserController extends Controller
 
         $user->modulePermissions()->delete();
         if ($request->has('permissions')) {
+            $company = Company::find($request->company_id);
+            $companyModules = $company->modules ?? [];
             foreach ($request->permissions as $perm) {
-                $user->modulePermissions()->create(['module_name' => $perm]);
+                if (in_array($perm, $companyModules)) {
+                    $user->modulePermissions()->create(['module_name' => $perm]);
+                }
             }
         }
 

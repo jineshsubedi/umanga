@@ -90,8 +90,12 @@ class UserController extends Controller
         ]);
 
         if ($request->has('permissions')) {
+            $company = auth()->user()->company;
+            $companyModules = $company->modules ?? [];
             foreach ($request->permissions as $perm) {
-                $user->modulePermissions()->create(['module_name' => $perm]);
+                if (in_array($perm, $companyModules)) {
+                    $user->modulePermissions()->create(['module_name' => $perm]);
+                }
             }
         }
 
@@ -132,8 +136,12 @@ class UserController extends Controller
 
         $user->modulePermissions()->delete();
         if ($request->has('permissions')) {
+            $company = auth()->user()->company;
+            $companyModules = $company->modules ?? [];
             foreach ($request->permissions as $perm) {
-                $user->modulePermissions()->create(['module_name' => $perm]);
+                if (in_array($perm, $companyModules)) {
+                    $user->modulePermissions()->create(['module_name' => $perm]);
+                }
             }
         }
 
